@@ -192,7 +192,7 @@ export default async function AdminDashboard() {
                       </p>
                     </td>
                     <td className="px-4 py-3 text-neutral-600">
-                      {order.profiles?.full_name ?? order.shipping_address?.name ?? "—"}
+                      {order.profiles?.[0]?.full_name ?? order.shipping_address?.name ?? "—"}
                     </td>
                     <td className="px-4 py-3">
                       <span

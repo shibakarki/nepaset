@@ -9,7 +9,7 @@ type CustomRequest = {
   custom_request: string | null;
   created_at: string;
   shipping_address: { name: string; phone: string };
-  profiles?: { full_name: string | null; email: string | null };
+  profiles?: { full_name: string | null; email: string | null }[];
 };
 
 const STATUS_COLORS: Record<string, string> = {
@@ -25,7 +25,7 @@ async function getCustomRequests(): Promise<CustomRequest[]> {
 
   const { data } = await supabase
     .from("orders")
-    .select("id, status, total, custom_request, created_at, shipping_address, profiles(full_name, email)")
+    .select("id, user_id, status, total, custom_request, created_at, shipping_address, profiles(full_name, email)")
     .not("custom_request", "is", null)
     .order("created_at", { ascending: false });
 
@@ -75,10 +75,10 @@ export default async function CustomRequestsPage() {
                     </span>
                   </div>
                   <p className="text-sm font-medium text-[#0a0a0a] mb-1">
-                    {req.profiles?.full_name ?? req.shipping_address?.name ?? "Unknown"}
+                    {req.profiles?.[0]?.full_name ?? req.shipping_address?.name ?? "Unknown"}
                   </p>
-                  {req.profiles?.email && (
-                    <p className="text-xs text-neutral-400 mb-2">{req.profiles.email}</p>
+                  {req.profiles?.[0]?.email && (
+                    <p className="text-xs text-neutral-400 mb-2">{req.profiles[0].email}</p>
                   )}
                   {req.custom_request && (
                     <p className="text-xs text-neutral-500 line-clamp-2 max-w-lg">

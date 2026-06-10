@@ -13,21 +13,36 @@ import {
 async function getOrder(id: string) {
   const supabase = await createClient();
 
+  // Step 1: Fetch order
   const { data: order, error } = await supabase
     .from("orders")
-    .select("*, profiles(full_name, email)")
+    .select("*")
     .eq("id", id)
     .single();
 
   if (error || !order) return null;
 
+  // Step 2: Fetch profile manually (Removed email field)
+  let profiles: any[] = [];
+  if (order.user_id) {
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("full_name")
+      .eq("id", order.user_id)
+      .single();
+    if (profile) {
+      profiles = [profile];
+    }
+  }
+
+  // Step 3: Fetch items normally
   const { data: items } = await supabase
     .from("order_items")
     .select("*, products(name, slug, images)")
     .eq("order_id", id);
 
   return {
-    order: order as Order,
+    order: { ...order, profiles } as any,
     items: (items ?? []) as OrderItem[],
   };
 }
@@ -109,15 +124,9 @@ export default async function AdminOrderDetailPage({
             <div className="flex justify-between">
               <span className="text-neutral-500">Name</span>
               <span className="text-[#0a0a0a] font-medium">
-                {order.profiles?.full_name ?? order.shipping_address?.name ?? "—"}
+                {order.profiles?.[0]?.full_name ?? order.shipping_address?.name ?? "—"}
               </span>
             </div>
-            {order.profiles?.email && (
-              <div className="flex justify-between">
-                <span className="text-neutral-500">Email</span>
-                <span className="text-[#0a0a0a]">{order.profiles.email}</span>
-              </div>
-            )}
             {order.shipping_address?.phone && (
               <div className="flex justify-between">
                 <span className="text-neutral-500">Phone</span>
@@ -183,7 +192,7 @@ export default async function AdminOrderDetailPage({
           <div className="border-t border-neutral-150 mt-4 pt-4 flex justify-between">
             <span className="text-sm font-medium text-[#0a0a0a]">Total</span>
             <span className="text-sm font-medium text-[#0a0a0a]">
-              Rs. {order.total.toLocaleString("en-NP")}
+              Rs. {Number(order.total_amount || 0).toLocaleString("en-NP")}
             </span>
           </div>
         </section>

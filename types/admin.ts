@@ -24,7 +24,7 @@ export type Order = {
   profiles?: {
     full_name: string | null;
     email: string | null;
-  };
+  }[];
 };
 
 export type OrderItem = {

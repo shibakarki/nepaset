@@ -1,52 +1,68 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { createClient } from "@/lib/supabase/client";
+import { useCart } from "@/hooks/useCart";
 import type { ProductVariant } from "@/types/product";
 
 type Props = {
   variants: ProductVariant[];
   basePrice: number;
+  productId: string;
+  productName: string;
+  productSlug: string;
+  productImage: string | null;
   onVariantChange?: (variant: ProductVariant | null) => void;
 };
 
-export function VariantSelector({ variants, basePrice, onVariantChange }: Props) {
-  const sizes = [...new Set(variants.map((v) => v.size).filter(Boolean))] as string[];
-  const colors = [...new Set(variants.map((v) => v.color).filter(Boolean))] as string[];
+export function VariantSelector({
+  variants,
+  basePrice,
+  productId,
+  productName,
+  productSlug,
+  productImage,
+  onVariantChange,
+}: Props) {
+  const router = useRouter()
+  const { addItem } = useCart()
+
+  const sizes = [...new Set(variants.map((v) => v.size).filter(Boolean))] as string[]
+  const colors = [...new Set(variants.map((v) => v.color).filter(Boolean))] as string[]
 
   const [selectedSize, setSelectedSize] = useState<string | null>(
     sizes.length === 1 ? sizes[0] : null
-  );
+  )
   const [selectedColor, setSelectedColor] = useState<string | null>(
     colors.length === 1 ? colors[0] : null
-  );
+  )
 
   function getMatchingVariant(size: string | null, color: string | null) {
     return variants.find((v) => {
-      const sizeMatch = sizes.length === 0 || v.size === size;
-      const colorMatch = colors.length === 0 || v.color === color;
-      return sizeMatch && colorMatch;
-    }) ?? null;
+      const sizeMatch = sizes.length === 0 || v.size === size
+      const colorMatch = colors.length === 0 || v.color === color
+      return sizeMatch && colorMatch
+    }) ?? null
   }
 
   function handleSize(size: string) {
-    setSelectedSize(size);
-    const variant = getMatchingVariant(size, selectedColor);
-    onVariantChange?.(variant);
+    setSelectedSize(size)
+    onVariantChange?.(getMatchingVariant(size, selectedColor))
   }
 
   function handleColor(color: string) {
-    setSelectedColor(color);
-    const variant = getMatchingVariant(selectedSize, color);
-    onVariantChange?.(variant);
+    setSelectedColor(color)
+    onVariantChange?.(getMatchingVariant(selectedSize, color))
   }
 
-  const activeVariant = getMatchingVariant(selectedSize, selectedColor);
-  const finalPrice = basePrice + (activeVariant?.price_delta ?? 0);
-  const inStock = activeVariant ? activeVariant.stock > 0 : true;
+  const activeVariant = getMatchingVariant(selectedSize, selectedColor)
+  const finalPrice = basePrice + (activeVariant?.price_delta ?? 0)
+  const inStock = activeVariant ? activeVariant.stock > 0 : variants.length === 0
 
   return (
     <div className="space-y-5">
-      {/* Price — updates with variant */}
+      {/* Price */}
       <div className="flex items-baseline gap-2">
         <span className="font-space text-2xl font-medium text-[#0a0a0a] tracking-tight">
           Rs. {finalPrice.toLocaleString("en-NP")}
@@ -71,8 +87,8 @@ export function VariantSelector({ variants, basePrice, onVariantChange }: Props)
           </p>
           <div className="flex flex-wrap gap-2">
             {sizes.map((size) => {
-              const sizeVariant = getMatchingVariant(size, selectedColor);
-              const outOfStock = sizeVariant ? sizeVariant.stock === 0 : false;
+              const sizeVariant = getMatchingVariant(size, selectedColor)
+              const outOfStock = sizeVariant ? sizeVariant.stock === 0 : false
               return (
                 <button
                   key={size}
@@ -84,12 +100,12 @@ export function VariantSelector({ variants, basePrice, onVariantChange }: Props)
                       ? "border-neutral-150 text-neutral-300 cursor-not-allowed line-through"
                       : selectedSize === size
                       ? "bg-[#0a0a0a] text-white border-[#0a0a0a]"
-                      : "border-neutral-150 text-[#0a0a0a] hover:border-neutral-300",
+                      : "border-neutral-200 text-[#0a0a0a] hover:border-neutral-400",
                   ].join(" ")}
                 >
                   {size}
                 </button>
-              );
+              )
             })}
           </div>
         </div>
@@ -108,8 +124,8 @@ export function VariantSelector({ variants, basePrice, onVariantChange }: Props)
           </p>
           <div className="flex flex-wrap gap-2">
             {colors.map((color) => {
-              const colorVariant = getMatchingVariant(selectedSize, color);
-              const outOfStock = colorVariant ? colorVariant.stock === 0 : false;
+              const colorVariant = getMatchingVariant(selectedSize, color)
+              const outOfStock = colorVariant ? colorVariant.stock === 0 : false
               return (
                 <button
                   key={color}
@@ -121,12 +137,12 @@ export function VariantSelector({ variants, basePrice, onVariantChange }: Props)
                       ? "border-neutral-150 text-neutral-300 cursor-not-allowed line-through"
                       : selectedColor === color
                       ? "bg-[#0a0a0a] text-white border-[#0a0a0a]"
-                      : "border-neutral-150 text-[#0a0a0a] hover:border-neutral-300",
+                      : "border-neutral-200 text-[#0a0a0a] hover:border-neutral-400",
                   ].join(" ")}
                 >
                   {color}
                 </button>
-              );
+              )
             })}
           </div>
         </div>
@@ -143,59 +159,80 @@ export function VariantSelector({ variants, basePrice, onVariantChange }: Props)
         </p>
       )}
 
-      {/* CTA */}
+      {/* Add to cart */}
       <AddToCartButton
-        variant={activeVariant}
         inStock={inStock}
         needsSize={sizes.length > 0 && !selectedSize}
         needsColor={colors.length > 0 && !selectedColor}
+        onAdd={async () => {
+          // Require login
+          const supabase = createClient()
+          const { data: { user } } = await supabase.auth.getUser()
+          if (!user) {
+            router.push('/auth/login?next=' + encodeURIComponent(window.location.pathname))
+            return
+          }
+          addItem({
+            productId,
+            productName,
+            productSlug,
+            productImage,
+            variant: activeVariant,
+            unitPrice: finalPrice,
+            maxStock: activeVariant?.stock ?? 999,
+          })
+        }}
       />
     </div>
-  );
+  )
 }
 
 function AddToCartButton({
-  variant,
   inStock,
   needsSize,
   needsColor,
+  onAdd,
 }: {
-  variant: ProductVariant | null;
-  inStock: boolean;
-  needsSize: boolean;
-  needsColor: boolean;
+  inStock: boolean
+  needsSize: boolean
+  needsColor: boolean
+  onAdd: () => Promise<void>
 }) {
-  const [added, setAdded] = useState(false);
+  const [state, setState] = useState<'idle' | 'loading' | 'added'>('idle')
 
-  function handleAdd() {
-    if (!inStock || needsSize || needsColor) return;
-    // cart logic will wire in here via useCart hook
-    setAdded(true);
-    setTimeout(() => setAdded(false), 2000);
+  async function handleAdd() {
+    if (!inStock || needsSize || needsColor || state !== 'idle') return
+    setState('loading')
+    await onAdd()
+    setState('added')
+    setTimeout(() => setState('idle'), 2000)
   }
 
-  let label = "Add to cart";
-  if (!inStock) label = "Out of stock";
-  else if (needsSize) label = "Select a size";
-  else if (needsColor) label = "Select a color";
-  else if (added) label = "Added ✓";
+  let label = "Add to cart"
+  if (!inStock) label = "Out of stock"
+  else if (needsSize) label = "Select a size"
+  else if (needsColor) label = "Select a color"
+  else if (state === 'loading') label = "Adding…"
+  else if (state === 'added') label = "Added to cart ✓"
 
   return (
     <button
       onClick={handleAdd}
-      disabled={!inStock || needsSize || needsColor}
+      disabled={!inStock || needsSize || needsColor || state === 'loading'}
       className={[
         "w-full py-3 rounded-xl text-sm font-medium tracking-wide transition-all duration-150",
         !inStock
           ? "bg-neutral-100 text-neutral-300 cursor-not-allowed"
           : needsSize || needsColor
           ? "bg-neutral-100 text-neutral-400 cursor-not-allowed"
-          : added
+          : state === 'added'
           ? "bg-neutral-800 text-white"
+          : state === 'loading'
+          ? "bg-neutral-700 text-white opacity-80"
           : "bg-[#0a0a0a] text-white hover:bg-neutral-800 active:scale-[0.99]",
       ].join(" ")}
     >
       {label}
     </button>
-  );
+  )
 }

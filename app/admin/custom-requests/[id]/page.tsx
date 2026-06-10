@@ -16,7 +16,7 @@ type CustomRequest = {
     address: string;
     city: string;
   };
-  profiles?: { full_name: string | null; email: string | null };
+  profiles?: { full_name: string | null; email: string | null }[];
 };
 
 const STATUS_OPTIONS = [
@@ -115,13 +115,13 @@ export default async function CustomRequestDetailPage({
             <div className="flex justify-between">
               <span className="text-neutral-500">Name</span>
               <span className="text-[#0a0a0a] font-medium">
-                {request.profiles?.full_name ?? request.shipping_address?.name ?? "—"}
+                {request.profiles?.[0]?.full_name ?? request.shipping_address?.name ?? "—"}
               </span>
             </div>
-            {request.profiles?.email && (
+            {request.profiles?.[0]?.email && (
               <div className="flex justify-between">
                 <span className="text-neutral-500">Email</span>
-                <span className="text-[#0a0a0a]">{request.profiles.email}</span>
+                <span className="text-[#0a0a0a]">{request.profiles[0].email}</span>
               </div>
             )}
             {request.shipping_address?.phone && (

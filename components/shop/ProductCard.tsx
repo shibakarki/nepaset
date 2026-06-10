@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
+import { useEffect, useState } from "react";
 import { CATEGORY_LABELS, type Product } from "@/types/product";
 
 type Props = {
@@ -15,12 +16,32 @@ const CATEGORY_BG: Record<string, string> = {
   earbuds: "bg-blue-50",
 };
 
+function getPrimaryImage(images: string[] | null | undefined) {
+  const source = Array.isArray(images) ? images.find(Boolean) : null;
+
+  if (!source) return null;
+
+  return /^https?:\/\//i.test(source.trim()) ? source.trim() : null;
+}
+
+function getFallbackEmoji(category: string) {
+  if (category === "tshirt" || category === "shirt") return "👕";
+  if (category === "phone-case") return "📱";
+  return "🎧";
+}
+
 export function ProductCard({ product }: Props) {
   const bgClass = CATEGORY_BG[product.category] ?? "bg-neutral-100";
-  const firstImage =
-  product.images?.[0] && product.images[0].startsWith("http")
-    ? product.images[0]
-    : null;
+  const [imageSrc, setImageSrc] = useState(() => getPrimaryImage(product.images));
+  const [hasImageError, setHasImageError] = useState(false);
+
+  useEffect(() => {
+    setImageSrc(getPrimaryImage(product.images));
+    setHasImageError(false);
+  }, [product.id, product.images]);
+
+  const shouldRenderImage = Boolean(imageSrc) && !hasImageError;
+  const fallbackEmoji = getFallbackEmoji(product.category);
 
   return (
     <Link href={`/shop/${product.slug}`} className="group block">
@@ -29,21 +50,18 @@ export function ProductCard({ product }: Props) {
         <div
           className={`relative aspect-square w-full ${bgClass} flex items-center justify-center`}
         >
-          {firstImage ? (
+          {shouldRenderImage ? (
             <Image
-              src={firstImage}
+              src={imageSrc as string}
               alt={product.name}
               fill
               className="object-cover"
               sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+              onError={() => setHasImageError(true)}
             />
           ) : (
             <span className="text-neutral-300 text-5xl select-none">
-              {product.category === "tshirt" || product.category === "shirt"
-                ? "👕"
-                : product.category === "phone-case"
-                ? "📱"
-                : "🎧"}
+              {fallbackEmoji}
             </span>
           )}
 

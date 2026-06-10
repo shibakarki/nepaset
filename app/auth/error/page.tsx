@@ -8,7 +8,8 @@ export default function AuthErrorPage() {
         <p className="text-sm text-neutral-500 font-inter mb-6">
           Something went wrong. Please try again.
         </p>
-        
+
+        <a
           href="/auth/login"
           className="text-sm text-black font-medium underline underline-offset-2 font-inter"
         >

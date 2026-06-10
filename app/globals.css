@@ -59,27 +59,36 @@ body {
 }
 
 @keyframes heroRotate {
-  0%, 100% {
-    transform: translate(-50%, -50%) rotateY(18deg) rotateX(6deg) translateX(-18px) translateZ(0px);
+  0% {
+    transform: translate(calc(-50% + var(--x, 0px)), calc(-50% + var(--y, 0px))) rotateY(18deg) rotateX(6deg) scale(1);
+    opacity: 1;
   }
-  20% {
-    transform: translate(-50%, -50%) rotateY(4deg) rotateX(4deg) translateX(-6px) translateZ(10px);
+  14% {
+    transform: translate(calc(-50% + var(--x, 0px)), calc(-50% + var(--y, 0px) + 18px)) rotateY(8deg) rotateX(4deg) scale(0.97);
+    opacity: 0.85;
   }
-  40% {
-    transform: translate(-50%, -50%) rotateY(-8deg) rotateX(2deg) translateX(10px) translateZ(24px);
+  28% {
+    transform: translate(calc(-50% + var(--x, 0px) + 18px), calc(-50% + var(--y, 0px) + 6px)) rotateY(-6deg) rotateX(2deg) scale(1.01);
+    opacity: 1;
   }
-  60% {
-    transform: translate(-50%, -50%) rotateY(-20deg) rotateX(0deg) translateX(24px) translateZ(14px);
+  50% {
+    transform: translate(calc(-50% + var(--x, 0px) + 28px), calc(-50% + var(--y, 0px) - 4px)) rotateY(-14deg) rotateX(0deg) scale(1.02);
+    opacity: 1;
   }
-  80% {
-    transform: translate(-50%, -50%) rotateY(-8deg) rotateX(3deg) translateX(8px) translateZ(6px);
+  72% {
+    transform: translate(calc(-50% + var(--x, 0px) + 10px), calc(-50% + var(--y, 0px) - 8px)) rotateY(-8deg) rotateX(2deg) scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(calc(-50% + var(--x, 0px)), calc(-50% + var(--y, 0px))) rotateY(18deg) rotateX(6deg) scale(1);
+    opacity: 1;
   }
 }
 
 .hero-product-card {
   transform-style: preserve-3d;
-  animation: heroRotate 16s ease-in-out infinite;
-  will-change: transform;
+  transform: translate(-50%, -50%);
+  will-change: transform, opacity;
 }
 
 .hero-product-card:nth-child(2) { animation-delay: -4s; }

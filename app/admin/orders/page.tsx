@@ -17,20 +17,50 @@ const STATUS_FILTERS: { label: string; value: string }[] = [
   { label: "Cancelled", value: "cancelled" },
 ];
 
-async function getOrders(status: string): Promise<Order[]> {
+async function getOrders(status: string): Promise<any[]> {
   const supabase = await createClient();
 
+  // Step 1: Fetch orders without direct SQL join to avoid PostgREST relationship errors
   let query = supabase
     .from("orders")
-    .select("id, status, total, created_at, shipping_address, profiles(full_name, email)")
+    .select("id, status, total_amount, created_at, shipping_address, user_id")
     .order("created_at", { ascending: false });
 
   if (status && status !== "all") {
     query = query.eq("status", status);
   }
 
-  const { data } = await query;
-  return (data ?? []) as Order[];
+  const { data: orders, error: ordersError } = await query;
+  if (ordersError || !orders) {
+    console.error("Error fetching orders:", ordersError);
+    return [];
+  }
+
+  // Step 2: Grab all non-null user IDs
+  const userIds = orders.map((o) => o.user_id).filter(Boolean);
+  if (userIds.length === 0) {
+    return orders.map((o) => ({ ...o, profiles: [] }));
+  }
+
+  // Step 3: Fetch profiles for these users (Removed "email" column)
+  const { data: profiles, error: profilesError } = await supabase
+    .from("profiles")
+    .select("id, full_name")
+    .in("id", userIds);
+
+  if (profilesError) {
+    console.error("Error fetching profiles:", profilesError);
+    return orders.map((o) => ({ ...o, profiles: [] }));
+  }
+
+  // Step 4: Stitch profiles in memory
+  return orders.map((order) => {
+    const matchedProfile = profiles?.find((p) => p.id === order.user_id);
+    return {
+      ...order,
+      profiles: matchedProfile ? [matchedProfile] : [],
+    };
+  });
 }
 
 export default async function AdminOrdersPage({
@@ -118,15 +148,10 @@ export default async function AdminOrdersPage({
                   </td>
                   <td className="px-4 py-3">
                     <p className="text-[#0a0a0a]">
-                      {order.profiles?.full_name ??
+                      {order.profiles?.[0]?.full_name ??
                         order.shipping_address?.name ??
                         "—"}
                     </p>
-                    {order.profiles?.email && (
-                      <p className="text-[11px] text-neutral-400">
-                        {order.profiles.email}
-                      </p>
-                    )}
                   </td>
                   <td className="px-4 py-3 text-neutral-500">
                     {new Date(order.created_at).toLocaleDateString("en-NP", {
@@ -146,7 +171,7 @@ export default async function AdminOrdersPage({
                     </span>
                   </td>
                   <td className="px-4 py-3 text-right font-medium text-[#0a0a0a]">
-                    Rs. {order.total.toLocaleString("en-NP")}
+                    Rs. {Number(order.total_amount || 0).toLocaleString("en-NP")}
                   </td>
                   <td className="px-4 py-3 text-right">
                     <Link

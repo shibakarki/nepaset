@@ -137,9 +137,9 @@ export default async function AdminProductsPage({
   />
 ) : (
                             <span className="text-lg">
-                              {product.category === "t-shirts" || product.category === "shirts"
+                              {product.category === "tshirt" || product.category === "shirt"
                                 ? "👕"
-                                : product.category === "phone-cases"
+                                : product.category === "phone-case"
                                 ? "📱"
                                 : "🎧"}
                             </span>
