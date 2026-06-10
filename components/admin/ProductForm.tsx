@@ -54,7 +54,9 @@ export function ProductForm({ product, variants = [] }: Props) {
   const [productType, setProductType] = useState<"simple" | "variable">(
     variants.length > 0 ? "variable" : "simple"
   );
-  const [globalStock, setGlobalStock] = useState(String(product?.stock ?? "10"));
+  
+  // CHANGED: Added "as any" cast to satisfy strict TypeScript type checks for products without "stock" in their interface
+  const [globalStock, setGlobalStock] = useState(String((product as any)?.stock ?? "10"));
 
   // Auto-generator matrix options selected
   const [genSizes, setGenSizes] = useState<string[]>([]);

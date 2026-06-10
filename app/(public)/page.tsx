@@ -1,7 +1,6 @@
 'use client'
 
 import Link from 'next/link'
-import Image from 'next/image'
 import { useEffect, useRef, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 
@@ -60,8 +59,10 @@ function HeroSection() {
   // ── 2. DOM-imperative queue animation (mirrors reference JS exactly) ──
   useEffect(() => {
     if (products.length === 0) return
-    const showcase = showcaseRef.current
-    if (!showcase) return
+    // Guard against null first
+    if (!showcaseRef.current) return
+    // Assert strictly as HTMLDivElement to guarantee non-null types inside nested closures
+    const showcase = showcaseRef.current as HTMLDivElement
 
     // --- Config (matches reference) ---
     const visibleCount = 5
@@ -247,7 +248,6 @@ function HeroSection() {
         if (e.deltaX > 0) { rotateQueueForward(); lastWheelTime = now }
         else if (e.deltaX < 0) { rotateQueueBackward(); lastWheelTime = now }
       }
-      // vertical deltaY passes through untouched → normal page scroll
     }
 
     showcase.addEventListener('mouseenter', onMouseEnter)
@@ -454,9 +454,7 @@ function HeroSection() {
           className="flex flex-col lg:flex-row w-full"
           style={{ minHeight: 'calc(100svh - 56px)' }}
         >
-          {/* ════════════════════════════════════════
-              LEFT PANE — existing copy & CTAs
-          ════════════════════════════════════════ */}
+          {/* LEFT PANE — existing copy & CTAs */}
           <div
             className="
               flex flex-col justify-center min-w-0
@@ -508,9 +506,7 @@ function HeroSection() {
             </div>
           </div>
 
-          {/* ════════════════════════════════════════
-              RIGHT PANE — interactive card queue
-          ════════════════════════════════════════ */}
+          {/* RIGHT PANE — interactive card queue */}
           <div
             className="
               relative w-full lg:w-1/2 shrink-0
@@ -535,7 +531,6 @@ function HeroSection() {
                 cursor: 'grab',
               }}
               onMouseDown={(e) => {
-                // cursor swap handled by CSS :active fallback
                 ;(e.currentTarget as HTMLDivElement).style.cursor = 'grabbing'
               }}
               onMouseUp={(e) => {
