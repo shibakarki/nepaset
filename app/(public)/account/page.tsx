@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
-import { ORDER_STATUS_COLORS, ORDER_STATUS_LABELS } from "@/types/admin";
+import { ORDER_STATUS_COLORS, ORDER_STATUS_LABELS, type OrderStatus } from "@/types/admin";
 import { SignOutButton } from "@/components/account/SignOutButton";
 import { OrderSuccessToast } from "@/components/account/OrderSuccessToast";
 
@@ -12,7 +12,7 @@ async function getAccountData() {
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("full_name") // Removed email and created_at
+    .select("full_name")
     .eq("id", user.id)
     .single();
 
@@ -170,10 +170,10 @@ export default async function AccountPage({
                       <span
                         className={[
                           "text-[10px] font-medium px-2 py-0.5 rounded-full border",
-                          ORDER_STATUS_COLORS[order.status],
+                          ORDER_STATUS_COLORS[order.status as OrderStatus],
                         ].join(" ")}
                       >
-                        {ORDER_STATUS_LABELS[order.status]}
+                        {ORDER_STATUS_LABELS[order.status as OrderStatus]}
                       </span>
                     </div>
                     <p className="text-xs text-muted">

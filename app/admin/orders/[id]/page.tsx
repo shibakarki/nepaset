@@ -22,7 +22,7 @@ async function getOrder(id: string) {
 
   if (error || !order) return null;
 
-  // Step 2: Fetch profile manually (Removed email field)
+  // Step 2: Fetch profile manually
   let profiles: any[] = [];
   if (order.user_id) {
     const { data: profile } = await supabase
@@ -107,10 +107,10 @@ export default async function AdminOrderDetailPage({
         <span
           className={[
             "text-xs font-medium px-3 py-1 rounded-full border",
-            ORDER_STATUS_COLORS[order.status],
+            ORDER_STATUS_COLORS[order.status as OrderStatus],
           ].join(" ")}
         >
-          {ORDER_STATUS_LABELS[order.status]}
+          {ORDER_STATUS_LABELS[order.status as OrderStatus]}
         </span>
       </div>
 
@@ -219,7 +219,7 @@ export default async function AdminOrderDetailPage({
             {/* Progress bar */}
             <div className="flex items-center gap-1 mb-6">
               {STATUS_FLOW.map((s, i) => {
-                const currentIndex = STATUS_FLOW.indexOf(order.status);
+                const currentIndex = STATUS_FLOW.indexOf(order.status as OrderStatus);
                 const isPast = i < currentIndex;
                 const isCurrent = i === currentIndex;
                 return (

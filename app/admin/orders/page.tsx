@@ -32,7 +32,12 @@ async function getOrders(status: string): Promise<any[]> {
 
   const { data: orders, error: ordersError } = await query;
   if (ordersError || !orders) {
-    console.error("Error fetching orders:", ordersError);
+    console.error("Error fetching orders:", {
+      message: ordersError?.message,
+      details: ordersError?.details,
+      hint: ordersError?.hint,
+      code: ordersError?.code,
+    });
     return [];
   }
 
@@ -42,18 +47,23 @@ async function getOrders(status: string): Promise<any[]> {
     return orders.map((o) => ({ ...o, profiles: [] }));
   }
 
-  // Step 3: Fetch profiles for these users (Removed "email" column)
+  // Step 3: Fetch profiles for these users
   const { data: profiles, error: profilesError } = await supabase
     .from("profiles")
     .select("id, full_name")
     .in("id", userIds);
 
   if (profilesError) {
-    console.error("Error fetching profiles:", profilesError);
+    console.error("Error fetching profiles:", {
+      message: profilesError?.message,
+      details: profilesError?.details,
+      hint: profilesError?.hint,
+      code: profilesError?.code,
+    });
     return orders.map((o) => ({ ...o, profiles: [] }));
   }
 
-  // Step 4: Stitch profiles in memory
+  // Step 4: Stitch profiles
   return orders.map((order) => {
     const matchedProfile = profiles?.find((p) => p.id === order.user_id);
     return {
@@ -164,10 +174,10 @@ export default async function AdminOrdersPage({
                     <span
                       className={[
                         "text-[11px] font-medium px-2 py-0.5 rounded-full border",
-                        ORDER_STATUS_COLORS[order.status],
+                        ORDER_STATUS_COLORS[order.status as OrderStatus],
                       ].join(" ")}
                     >
-                      {ORDER_STATUS_LABELS[order.status]}
+                      {ORDER_STATUS_LABELS[order.status as OrderStatus]}
                     </span>
                   </td>
                   <td className="px-4 py-3 text-right font-medium text-[#0a0a0a]">
