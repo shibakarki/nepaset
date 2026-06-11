@@ -428,7 +428,7 @@ function HeroSection() {
           text-overflow: ellipsis;
         }
 
-        /* --- Mobile: smaller base card so background cards read as clearly receded --- */
+        /* --- Mobile Breakpoints & 3-Card layout Re-optimization --- */
         @media (max-width: 991px) {
           .hero-product-card {
             width: clamp(72px, 18vw, 110px);
@@ -444,6 +444,42 @@ function HeroSection() {
           }
           .hero-card-title {
             font-size: 0.6rem;
+          }
+        }
+
+        @media (max-width: 767px) {
+          /* 1. Hide outer-edge cards (pos-1, pos-5, and exit nodes) entirely to leave exactly 3 visible cards */
+          .hero-product-card.pos-1,
+          .hero-product-card.pos-5,
+          .hero-product-card.entering-left,
+          .hero-product-card.entering-right,
+          .hero-product-card.exiting-left,
+          .hero-product-card.exiting-right {
+            opacity: 0 !important;
+            visibility: hidden !important;
+            pointer-events: none !important;
+          }
+
+          /* 2. Position the remaining 3 cards, making background ones much smaller and layered */
+          .hero-product-card.pos-2 {
+            left: 16%;
+            transform: translate(-50%, -50%) scale(0.66) rotate(-3deg);
+            opacity: 0.5;
+            z-index: 3;
+          }
+          .hero-product-card.pos-3 {
+            left: 50%;
+            transform: translate(-50%, -50%) scale(1.15);
+            opacity: 1;
+            z-index: 5;
+            pointer-events: auto;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.12);
+          }
+          .hero-product-card.pos-4 {
+            left: 84%;
+            transform: translate(-50%, -50%) scale(0.66) rotate(3deg);
+            opacity: 0.5;
+            z-index: 3;
           }
         }
       `}</style>
