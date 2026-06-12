@@ -51,16 +51,16 @@ export function Footer() {
             © {new Date().getFullYear()} NEPASET. All rights reserved.
           </p>
           <div className="flex items-center gap-2">
-            <SocialLink href="https://www.instagram.com/nepaset?igsh=amczeDl4M2h4eTl6" label="Instagram">
+            <SocialLink href="https://www.instagram.com/nepaset/?utm_source=ig_web_button_share_sheet" label="Instagram">
               {/* Correct Instagram icon */}
               <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
               <circle cx="12" cy="12" r="4" />
               <circle cx="17.5" cy="6.5" r="0.5" fill="currentColor" stroke="none" />
             </SocialLink>
-            <SocialLink href="https://facebook.com" label="Facebook">
+            <SocialLink href="https://www.facebook.com/share/18gks8VFnH/" label="Facebook">
               <path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z" />
             </SocialLink>
-            <SocialLink href="https://www.tiktok.com/@nepaset?_r=1&_t=ZS-9715DEouKp8" label="TikTok">
+            <SocialLink href="https://www.tiktok.com/@nepaset?is_from_webapp=1&sender_device=pc" label="TikTok">
               <path d="M9 12a4 4 0 104 4V4a5 5 0 005 5" />
             </SocialLink>
           </div>
