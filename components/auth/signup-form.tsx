@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
+import { getURL } from '@/lib/supabase/utils' // Import the dynamic URL helper
 
 export function SignupForm() {
   const router = useRouter()
@@ -25,7 +26,8 @@ export function SignupForm() {
       password,
       options: {
         data: { full_name: `${firstName} ${lastName}`.trim() },
-        emailRedirectTo: `${location.origin}/auth/callback`,
+        // Use getURL() to enforce the https://shibakarki-nepaset.vercel.app origin in production
+        emailRedirectTo: `${getURL()}auth/callback`,
       },
     })
 
