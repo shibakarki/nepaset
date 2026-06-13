@@ -3,7 +3,6 @@
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
-import { getURL } from '@/lib/supabase/utils' // Import the dynamic URL helper
 
 export function SignupForm() {
   const router = useRouter()
@@ -21,13 +20,18 @@ export function SignupForm() {
     setLoading(true)
 
     const supabase = createClient()
+    
+    // Dynamic fallback: Use native browser window origin so it works on any domain (local or live)
+    const redirectUrl = typeof window !== 'undefined' 
+      ? `${window.location.origin}/auth/callback`
+      : 'https://shibakarki-nepaset.vercel.app/auth/callback'
+
     const { error } = await supabase.auth.signUp({
       email,
       password,
       options: {
         data: { full_name: `${firstName} ${lastName}`.trim() },
-        // Use getURL() to enforce the https://shibakarki-nepaset.vercel.app origin in production
-        emailRedirectTo: `${getURL()}auth/callback`,
+        emailRedirectTo: redirectUrl,
       },
     })
 
