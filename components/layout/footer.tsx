@@ -10,6 +10,7 @@ export function Footer() {
   ]
   const company = [
     { href: '/about', label: 'About' },
+    { href: '/contact', label: 'Contact' }, // ADDED Contact link
   ]
   const account = [
     { href: '/auth/login', label: 'Sign In' },

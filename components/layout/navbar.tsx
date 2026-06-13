@@ -47,6 +47,7 @@ export function Navbar() {
   const links = [
     { href: '/shop', label: 'Shop' },
     { href: '/about', label: 'About' },
+    { href: '/contact', label: 'Contact' }, // ADDED Contact link
   ]
 
   const isActive = (href: string) =>
