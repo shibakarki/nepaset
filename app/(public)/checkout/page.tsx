@@ -117,9 +117,7 @@ export default function CheckoutPage() {
             )
           }
           // Clear non-existent variant IDs so they don't break order_items insert
-          if (item.variant) {
-            item.variant.id = undefined
-          }
+          item.variant = null as any
         }
       }
       // ─────────────────────────────────────────────────────────────────────
