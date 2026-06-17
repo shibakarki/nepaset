@@ -30,7 +30,11 @@ export function SignupForm() {
       email,
       password,
       options: {
-        data: { full_name: `${firstName} ${lastName}`.trim() },
+        data: { 
+          first_name: firstName.trim(),
+          last_name: lastName.trim(),
+          full_name: `${firstName} ${lastName}`.trim() 
+        },
         emailRedirectTo: redirectUrl,
       },
     })

@@ -101,28 +101,24 @@ export default function CheckoutPage() {
       if (noVariantItems.length > 0) {
         const productIds = noVariantItems.map(i => i.productId)
         
-        // CHANGED: Query product_variants where size and color are null for these productIds
-        const { data: variants, error: vErr } = await supabase
-          .from('product_variants')
-          .select('id, product_id, stock')
-          .in('product_id', productIds)
-          .is('size', null)
-          .is('color', null)
+        // Query the products table directly for stock instead of product_variants
+        const { data: products, error: pErr } = await supabase
+          .from('products')
+          .select('id, stock')
+          .in('id', productIds)
         
-        if (vErr) throw vErr
+        if (pErr) throw pErr
 
         for (const item of noVariantItems) {
-          const live = variants?.find(v => v.product_id === item.productId)
+          const live = products?.find(p => p.id === item.productId)
           if (!live || live.stock < item.quantity) {
             throw new Error(
               `"${item.productName}" only has ${live?.stock ?? 0} left in stock.`
             )
           }
-          // Set the default variant_id in the item payload so order_items links correctly
+          // Clear non-existent variant IDs so they don't break order_items insert
           if (item.variant) {
-            item.variant.id = live.id
-          } else {
-            item.variant = { id: live.id } as any
+            item.variant.id = undefined
           }
         }
       }
