@@ -200,6 +200,7 @@ export function ProductForm({ product, variants = [] }: Props) {
     setGenSizes((prev) => prev.includes(size) ? prev.filter((s) => s !== size) : [...prev, size]);
   }
 
+  // Toggle Matrix Color selections
   function toggleGenColor(color: string) {
     setGenColors((prev) => prev.includes(color) ? prev.filter((c) => c !== color) : [...prev, color]);
   }
@@ -249,8 +250,7 @@ export function ProductForm({ product, variants = [] }: Props) {
         tags: tagList,
         is_customizable: isCustomizable,
         is_new: isNew,
-        // Simple product keeps global stock, Variable product zeroes global stock in products table
-        stock: productType === "simple" ? Number(globalStock) : 0,
+        // CHANGED: Removed stock here entirely because it does not exist on the products table schema
       };
 
       let productId = product?.id;
@@ -294,9 +294,27 @@ export function ProductForm({ product, variants = [] }: Props) {
           // If all variants were cleared out
           await supabase.from("product_variants").delete().eq("product_id", productId);
         }
-      } else if (productType === "simple" && productId && isEdit) {
-        // If switched back to simple, clear any pre-existing database variants
-        await supabase.from("product_variants").delete().eq("product_id", productId);
+      } else if (productType === "simple" && productId) {
+        // CHANGED: Simple Product stock is stored inside a single default variant row with size: null, color: null
+        
+        // Clean any pre-existing custom variants first to ensure a clean default state
+        if (isEdit) {
+          await supabase.from("product_variants").delete().eq("product_id", productId);
+        }
+
+        const defaultVariantPayload = {
+          product_id: productId,
+          size: null,
+          color: null,
+          stock: Number(globalStock),
+          price_delta: 0,
+        };
+
+        const { error: defaultVariantError } = await supabase
+          .from("product_variants")
+          .insert(defaultVariantPayload);
+
+        if (defaultVariantError) throw defaultVariantError;
       }
 
       router.push("/admin/products");
@@ -384,7 +402,7 @@ export function ProductForm({ product, variants = [] }: Props) {
               value={tags}
               onChange={(e) => setTags(e.target.value)}
               placeholder="kathmandu, cotton, student"
-              className="w-full border border-neutral-200 rounded-lg px-3 py-2.5 text-sm text-[#0a0a0a] focus:outline-none focus:border-neutral-900 transition-colors placeholder:text-neutral-300"
+              className="w-full border border-neutral-200 rounded-lg px-3 py-2.5 text-sm text-[#0a0a0a] focus:outline-none focus:border-neutral-900 transition-colors placeholder:text-muted/30"
             />
           </div>
 
@@ -657,7 +675,7 @@ export function ProductForm({ product, variants = [] }: Props) {
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="block text-[10px] font-semibold text-neutral-400 uppercase tracking-widest">Bulk Price Delta</label>
+                  <label className="block text-[10px] font-semibold text-neutral-400 uppercase tracking-widest">Bulk Apply Price Delta</label>
                   <div className="flex gap-1.5">
                     <input
                       type="number"

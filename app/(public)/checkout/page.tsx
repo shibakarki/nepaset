@@ -100,18 +100,29 @@ export default function CheckoutPage() {
 
       if (noVariantItems.length > 0) {
         const productIds = noVariantItems.map(i => i.productId)
-        const { data: products, error: pErr } = await supabase
-          .from('products')
-          .select('id, stock')
-          .in('id', productIds)
-        if (pErr) throw pErr
+        
+        // CHANGED: Query product_variants where size and color are null for these productIds
+        const { data: variants, error: vErr } = await supabase
+          .from('product_variants')
+          .select('id, product_id, stock')
+          .in('product_id', productIds)
+          .is('size', null)
+          .is('color', null)
+        
+        if (vErr) throw vErr
 
         for (const item of noVariantItems) {
-          const live = products?.find(p => p.id === item.productId)
+          const live = variants?.find(v => v.product_id === item.productId)
           if (!live || live.stock < item.quantity) {
             throw new Error(
               `"${item.productName}" only has ${live?.stock ?? 0} left in stock.`
             )
+          }
+          // Set the default variant_id in the item payload so order_items links correctly
+          if (item.variant) {
+            item.variant.id = live.id
+          } else {
+            item.variant = { id: live.id } as any
           }
         }
       }
@@ -119,7 +130,7 @@ export default function CheckoutPage() {
 
       const subtotal = totalPrice()
 
-      // Insert order
+      // Insert order with correct column name: total_amount
       const { data: order, error: orderError } = await supabase
         .from('orders')
         .insert({

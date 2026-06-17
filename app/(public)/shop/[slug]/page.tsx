@@ -15,7 +15,7 @@ async function getProduct(slug: string): Promise<{
   const { data: product, error } = await supabase
     .from("products")
     .select(
-      "id, name, slug, category, base_price, images, tags, is_customizable, is_new, created_at"
+      "id, name, slug, category, base_price, stock, images, tags, is_customizable, is_new, created_at"
     )
     .eq("slug", slug)
     .single();

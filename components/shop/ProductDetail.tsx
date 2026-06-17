@@ -275,13 +275,14 @@ export function ProductDetail({ product, variants }: Props) {
   // Determine if add-to-cart is possible
   const needsSize = hasSizes && !selectedSize;
   const needsColor = hasColors && !selectedColor;
-  const isOutOfStock =
-    hasVariants && matchedVariant !== null && matchedVariant.stock === 0;
+  const isOutOfStock = hasVariants
+    ? matchedVariant !== null && matchedVariant.stock === 0
+    : product.stock === 0;
   const noVariantSelected = needsSize || needsColor;
   const canAdd = !noVariantSelected && !isOutOfStock;
 
   // Stock display
-  const stock = matchedVariant?.stock ?? (hasVariants ? null : 999);
+  const stock = matchedVariant?.stock ?? (hasVariants ? null : product.stock);
   const lowStock = stock !== null && stock > 0 && stock <= 5;
 
   function handleAddToCart() {
@@ -294,7 +295,7 @@ export function ProductDetail({ product, variants }: Props) {
       productImage: product.images?.[0] ?? null,
       variant: matchedVariant,
       unitPrice,
-      maxStock: stock ?? 999,
+      maxStock: stock ?? 0,
     });
 
     setAdded(true);
@@ -408,8 +409,12 @@ export function ProductDetail({ product, variants }: Props) {
               <span className="font-inter text-xs text-neutral-400 uppercase tracking-widest">
                 Availability
               </span>
-              <span className="font-inter text-xs font-medium text-foreground">
-                In stock
+              <span
+                className={`font-inter text-xs font-medium ${
+                  isOutOfStock ? "text-muted" : "text-foreground"
+                }`}
+              >
+                {isOutOfStock ? "Out of stock" : "In stock"}
               </span>
             </div>
           )}

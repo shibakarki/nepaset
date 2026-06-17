@@ -6,6 +6,7 @@ export type Product = {
   slug: string;
   category: ProductCategory;
   base_price: number;
+  stock: number;
   images: string[];
   tags: string[];
   is_customizable: boolean;
