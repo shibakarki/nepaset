@@ -15,9 +15,12 @@ export function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false)
   const [mounted, setMounted] = useState(false)
   const [theme, setTheme] = useState<'light' | 'dark'>('light')
+  const [isFloating, setIsFloating] = useState(false)
+  const [searchQuery, setSearchQuery] = useState('')
   const { openCart, totalItems } = useCart()
   const itemCount = totalItems()
 
+  // 1. Theme and Authentication Setup
   useEffect(() => {
     const saved = localStorage.getItem('theme')
     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
@@ -40,7 +43,20 @@ export function Navbar() {
     localStorage.setItem('theme', theme)
   }, [mounted, theme])
 
-  // Lock scroll when mobile menu is open
+  // 2. Scroll Listener for "Dynamic Island" Morphing Search Bar
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY > 60) {
+        setIsFloating(true)
+      } else {
+        setIsFloating(false)
+      }
+    }
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
+
+  // 3. Scroll lock when mobile drawer is open
   useEffect(() => {
     if (mobileOpen) {
       document.body.style.overflow = 'hidden'
@@ -63,6 +79,14 @@ export function Navbar() {
     router.push('/')
   }
 
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (searchQuery.trim()) {
+      router.push(`/shop?search=${encodeURIComponent(searchQuery.trim())}`)
+      setMobileOpen(false)
+    }
+  }
+
   const links = [
     { href: '/shop', label: 'Shop All' },
     { href: '/about', label: 'About Us' },
@@ -83,20 +107,23 @@ export function Navbar() {
     <>
       <CartDrawer />
 
-      <header className="sticky top-0 z-40 bg-surface/95 border-b border-border backdrop-blur-sm">
-        <div className="max-w-6xl mx-auto px-4 h-14 flex items-center justify-between">
+      {/* --- 1. STICKY HEADER (Slides out when scrolling down) --- */}
+      <header className={`sticky top-0 z-40 transition-transform duration-500 ease-[cubic-bezier(0.25,1,0.5,1)] ${
+        isFloating ? '-translate-y-full' : 'translate-y-0'
+      } bg-surface/95 border-b border-border backdrop-blur-sm h-14`}>
+        <div className="max-w-6xl mx-auto px-4 h-full flex items-center justify-between">
 
           {/* Logo */}
           <Link
             href="/"
-            className="flex items-center gap-0.5 font-space text-lg font-bold tracking-tight text-foreground"
+            className="flex items-center gap-0.5 font-space text-lg font-bold tracking-tight text-foreground shrink-0 z-10"
           >
             NEPASET
             <span className="inline-block w-1.5 h-1.5 bg-foreground rounded-full mb-0.5 ml-0.5" />
           </Link>
 
-          {/* Desktop nav */}
-          <nav className="hidden md:flex items-center gap-7">
+          {/* Desktop Nav Links */}
+          <nav className="hidden md:flex items-center gap-6 shrink-0">
             {links.map(l => (
               <Link
                 key={l.href}
@@ -112,8 +139,11 @@ export function Navbar() {
             ))}
           </nav>
 
-          {/* Right icons */}
-          <div className="flex items-center gap-0.5">
+          {/* Spacer block that keeps Navbar layout balanced in non-floating state */}
+          <div className="hidden sm:block w-[140px] sm:w-[180px] md:w-[240px] lg:w-[280px]" />
+
+          {/* Header Controls */}
+          <div className="flex items-center gap-0.5 z-10">
 
             {/* Cart */}
             <button
@@ -133,10 +163,10 @@ export function Navbar() {
               )}
             </button>
 
-            {/* Account */}
+            {/* Account (Hidden on Mobile Header, present in Drawer instead to save space) */}
             <Link
               href={user ? '/account' : '/auth/login'}
-              className="w-10 h-10 flex items-center justify-center rounded-md hover:bg-surface-2 transition-colors text-foreground"
+              className="hidden sm:flex w-10 h-10 items-center justify-center rounded-md hover:bg-surface-2 transition-colors text-foreground"
               title={user ? 'My account' : 'Sign in'}
             >
               {user ? (
@@ -152,11 +182,11 @@ export function Navbar() {
               )}
             </Link>
 
-            {/* Theme toggle */}
+            {/* Theme toggle (Hidden on Mobile Header, present in Drawer instead) */}
             <button
               type="button"
               onClick={toggleTheme}
-              className="w-10 h-10 flex items-center justify-center rounded-md hover:bg-surface-2 transition-colors text-foreground cursor-pointer focus-visible:outline-none"
+              className="hidden sm:flex w-10 h-10 items-center justify-center rounded-md hover:bg-surface-2 transition-colors text-foreground cursor-pointer focus-visible:outline-none"
               aria-label="Toggle theme"
             >
               <svg className="block dark:hidden" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
@@ -190,146 +220,188 @@ export function Navbar() {
 
           </div>
         </div>
+      </header>
 
-        {/* FIXED: Increased z-index to z-50 and added compatible backdrops */}
-        {mobileOpen && (
-          <div className="md:hidden fixed inset-x-0 bottom-0 top-14 z-50 bg-black/40 dark:bg-black/70 backdrop-blur-sm">
-            <div className="bg-surface border-b border-border h-full max-h-[85vh] overflow-y-auto shadow-2xl flex flex-col justify-between">
+      {/* --- 2. DYNAMIC ISLAND SEARCH BAR (Morphs & detaches on scroll) --- */}
+      <div className={`pointer-events-none fixed left-1/2 -translate-x-1/2 w-full max-w-6xl px-4 z-45 transition-all duration-500 ${
+        isFloating ? 'top-2.5' : 'top-3'
+      }`}>
+        <div className="relative w-full h-8 flex items-center justify-center">
+          <form 
+            onSubmit={handleSearchSubmit}
+            className={`pointer-events-auto transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] ${
+              isFloating 
+                ? 'w-[200px] sm:w-[280px] h-9 rounded-full px-4 border border-border bg-surface/90 backdrop-blur-md shadow-[0_8px_30px_rgb(0,0,0,0.12)] flex items-center gap-2'
+                : 'w-[130px] sm:w-[180px] md:w-[240px] lg:w-[280px] h-8 rounded-lg px-3 border border-border/40 bg-surface-2 flex items-center gap-2'
+            }`}
+          >
+            {/* Search Icon */}
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-muted shrink-0">
+              <circle cx="11" cy="11" r="8" />
+              <path d="M21 21l-4.3-4.3" />
+            </svg>
+            
+            {/* Input field */}
+            <input 
+              type="text"
+              placeholder={isFloating ? "Search..." : "Search NEPASET..."}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="bg-transparent border-none outline-none text-xs text-foreground placeholder:text-muted/60 w-full h-full focus:ring-0"
+            />
+            
+            {/* Clear query button */}
+            {searchQuery && (
+              <button 
+                type="button" 
+                onClick={() => setSearchQuery('')}
+                className="text-muted hover:text-foreground text-xs font-semibold cursor-pointer"
+              >
+                ✕
+              </button>
+            )}
+          </form>
+        </div>
+      </div>
+
+      {/* --- 3. RE-DESIGNED MOBILE DRAWER (Now locked at strict z-[9999]) --- */}
+      {mobileOpen && (
+        <div className="md:hidden fixed inset-x-0 bottom-0 top-14 z-[9999] bg-black/40 dark:bg-black/70 backdrop-blur-sm">
+          <div className="bg-surface border-b border-border h-full max-h-[85vh] overflow-y-auto shadow-2xl flex flex-col justify-between">
+            
+            <div className="max-w-6xl mx-auto w-full px-4 py-5 space-y-6">
               
-              <div className="max-w-6xl mx-auto w-full px-4 py-5 space-y-6">
-                
-                {/* 1. Account Card */}
-                {user ? (
-                  <div className="bg-surface-2 border border-border rounded-xl p-4 flex flex-col gap-3">
-                    <div>
-                      <p className="font-inter text-[10px] tracking-wider uppercase text-muted font-bold">Logged In Account</p>
-                      <p className="font-space text-sm font-semibold text-foreground truncate mt-0.5">
-                        {user.user_metadata?.full_name || user.email}
-                      </p>
-                    </div>
-                    <div className="flex gap-2 w-full">
-                      <Link
-                        href="/account"
-                        onClick={() => setMobileOpen(false)}
-                        className="flex-1 text-center font-space text-xs font-semibold bg-surface border border-border text-foreground py-2 rounded-lg hover:bg-surface-2 transition-colors active:scale-[0.98]"
-                      >
-                        My Account
-                      </Link>
-                      <button
-                        onClick={handleSignOut}
-                        className="flex-1 text-center font-space text-xs font-semibold bg-red-500/10 text-red-500 border border-red-500/20 py-2 rounded-lg active:scale-[0.98] cursor-pointer"
-                      >
-                        Sign Out
-                      </button>
-                    </div>
+              {/* Account Card */}
+              {user ? (
+                <div className="bg-surface-2 border border-border rounded-xl p-4 flex flex-col gap-3">
+                  <div>
+                    <p className="font-inter text-[10px] tracking-wider uppercase text-muted font-bold">Logged In Account</p>
+                    <p className="font-space text-sm font-semibold text-foreground truncate mt-0.5">
+                      {user.user_metadata?.full_name || user.email}
+                    </p>
                   </div>
-                ) : (
-                  <div className="bg-[#0a0a0a] dark:bg-neutral-900 border border-neutral-800 rounded-xl p-4 flex flex-col gap-2">
-                    <p className="font-space text-sm font-semibold text-white">Join the Community</p>
-                    <p className="font-inter text-xs text-neutral-400">Sign in to track orders, manage addresses, and save designs.</p>
+                  <div className="flex gap-2 w-full">
                     <Link
-                      href="/auth/login"
+                      href="/account"
                       onClick={() => setMobileOpen(false)}
-                      className="text-center font-space text-xs font-semibold bg-white text-[#0a0a0a] py-2.5 rounded-lg active:scale-[0.98] transition-transform mt-1"
+                      className="flex-1 text-center font-space text-xs font-semibold bg-surface border border-border text-foreground py-2 rounded-lg hover:bg-surface-2 transition-colors active:scale-[0.98]"
                     >
-                      Sign In / Register
+                      My Account
                     </Link>
-                  </div>
-                )}
-
-                {/* 2. Visual Categories Grid */}
-                <div className="space-y-3">
-                  <p className="font-space text-xs font-bold tracking-widest uppercase text-muted">Shop by Category</p>
-                  <div className="grid grid-cols-2 gap-2">
-                    {categories.map(cat => (
-                      <Link
-                        key={cat.href}
-                        href={cat.href}
-                        onClick={() => setMobileOpen(false)}
-                        className="font-space text-xs px-4 py-3 border border-border bg-surface-2 rounded-xl text-foreground font-semibold hover:bg-surface active:scale-[0.98] transition-all flex items-center justify-between"
-                      >
-                        {cat.label}
-                        <span className="text-[10px] text-muted">→</span>
-                      </Link>
-                    ))}
+                    <button
+                      onClick={handleSignOut}
+                      className="flex-1 text-center font-space text-xs font-semibold bg-red-500/10 text-red-500 border border-red-500/20 py-2 rounded-lg active:scale-[0.98] cursor-pointer"
+                    >
+                      Sign Out
+                    </button>
                   </div>
                 </div>
-
-                {/* 3. Navigation Links */}
-                <div className="space-y-2">
-                  <p className="font-space text-xs font-bold tracking-widest uppercase text-muted">Pages</p>
-                  <nav className="flex flex-col gap-1.5">
-                    {links.map(l => (
-                      <Link
-                        key={l.href}
-                        href={l.href}
-                        onClick={() => setMobileOpen(false)}
-                        className={`font-inter text-sm px-4 py-3 rounded-xl transition-all ${
-                          isActive(l.href)
-                            ? 'text-foreground font-semibold bg-surface-2 border border-border/50'
-                            : 'text-muted hover:text-foreground hover:bg-surface-2 border border-transparent'
-                        }`}
-                      >
-                        {l.label}
-                      </Link>
-                    ))}
-                  </nav>
+              ) : (
+                <div className="bg-[#0a0a0a] dark:bg-neutral-900 border border-neutral-800 rounded-xl p-4 flex flex-col gap-2">
+                  <p className="font-space text-sm font-semibold text-white">Join the Community</p>
+                  <p className="font-inter text-xs text-neutral-400">Sign in to track orders, manage addresses, and save designs.</p>
+                  <Link
+                    href="/auth/login"
+                    onClick={() => setMobileOpen(false)}
+                    className="text-center font-space text-xs font-semibold bg-white text-[#0a0a0a] py-2.5 rounded-lg active:scale-[0.98] transition-transform mt-1"
+                  >
+                    Sign In / Register
+                  </Link>
                 </div>
+              )}
 
-                {/* 4. Social Links */}
-                <div className="space-y-3 pt-2 border-t border-border">
-                  <p className="font-space text-xs font-bold tracking-widest uppercase text-muted text-center">Follow & Connect</p>
-                  <div className="flex items-center justify-center gap-3">
-                    <a
-                      href="https://www.instagram.com/nepaset/?utm_source=ig_web_button_share_sheet"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="w-10 h-10 border border-border bg-surface rounded-xl flex items-center justify-center text-foreground active:scale-[0.95]"
-                      aria-label="Instagram"
+              {/* Visual Categories Grid */}
+              <div className="space-y-3">
+                <p className="font-space text-xs font-bold tracking-widest uppercase text-muted">Shop by Category</p>
+                <div className="grid grid-cols-2 gap-2">
+                  {categories.map(cat => (
+                    <Link
+                      key={cat.href}
+                      href={cat.href}
+                      onClick={() => setMobileOpen(false)}
+                      className="font-space text-xs px-4 py-3 border border-border bg-surface-2 rounded-xl text-foreground font-semibold hover:bg-surface active:scale-[0.98] transition-all flex items-center justify-between"
                     >
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
-                        <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
-                        <circle cx="12" cy="12" r="4" />
-                        <circle cx="17.5" cy="6.5" r="0.5" fill="currentColor" stroke="none" />
-                      </svg>
-                    </a>
-                    <a
-                      href="https://www.facebook.com/share/18gks8VFnH/"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="w-10 h-10 border border-border bg-surface rounded-xl flex items-center justify-center text-foreground active:scale-[0.95]"
-                      aria-label="Facebook"
-                    >
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z" />
-                      </svg>
-                    </a>
-                    <a
-                      href="https://www.tiktok.com/@nepaset?is_from_webapp=1&sender_device=pc"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="w-10 h-10 border border-border bg-surface rounded-xl flex items-center justify-center text-foreground active:scale-[0.95]"
-                      aria-label="TikTok"
-                    >
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M9 12a4 4 0 104 4V4a5 5 0 005 5" />
-                      </svg>
-                    </a>
-                  </div>
+                      {cat.label}
+                      <span className="text-[10px] text-muted">→</span>
+                    </Link>
+                  ))}
                 </div>
-
               </div>
-              
-              <div className="bg-surface-2 border-t border-border px-4 py-3 text-center">
-                <p className="font-inter text-[10px] text-muted">
-                  © {new Date().getFullYear()} NEPASET • Kathmandu, Nepal
-                </p>
+
+              {/* Navigation Links */}
+              <div className="space-y-2">
+                <p className="font-space text-xs font-bold tracking-widest uppercase text-muted">Pages</p>
+                <nav className="flex flex-col gap-1.5">
+                  {links.map(l => (
+                    <Link
+                      key={l.href}
+                      href={l.href}
+                      onClick={() => setMobileOpen(false)}
+                      className={`font-inter text-sm px-4 py-3 rounded-xl transition-all ${
+                        isActive(l.href)
+                          ? 'text-foreground font-semibold bg-surface-2 border border-border/50'
+                          : 'text-muted hover:text-foreground hover:bg-surface-2 border border-transparent'
+                      }`}
+                    >
+                      {l.label}
+                    </Link>
+                  ))}
+                </nav>
+              </div>
+
+              {/* Social Links */}
+              <div className="space-y-3 pt-2 border-t border-border">
+                <p className="font-space text-xs font-bold tracking-widest uppercase text-muted text-center">Follow & Connect</p>
+                <div className="flex items-center justify-center gap-3">
+                  <a
+                    href="https://www.instagram.com/nepaset/?utm_source=ig_web_button_share_sheet"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-10 h-10 border border-border bg-surface rounded-xl flex items-center justify-center text-foreground active:scale-[0.95]"
+                    aria-label="Instagram"
+                  >
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+                      <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
+                      <circle cx="12" cy="12" r="4" />
+                      <circle cx="17.5" cy="6.5" r="0.5" fill="currentColor" stroke="none" />
+                    </svg>
+                  </a>
+                  <a
+                    href="https://www.facebook.com/share/18gks8VFnH/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-10 h-10 border border-border bg-surface rounded-xl flex items-center justify-center text-foreground active:scale-[0.95]"
+                    aria-label="Facebook"
+                  >
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z" />
+                    </svg>
+                  </a>
+                  <a
+                    href="https://www.tiktok.com/@nepaset?is_from_webapp=1&sender_device=pc"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-10 h-10 border border-border bg-surface rounded-xl flex items-center justify-center text-foreground active:scale-[0.95]"
+                    aria-label="TikTok"
+                  >
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M9 12a4 4 0 104 4V4a5 5 0 005 5" />
+                    </svg>
+                  </a>
+                </div>
               </div>
 
             </div>
+            
+            <div className="bg-surface-2 border-t border-border px-4 py-3 text-center">
+              <p className="font-inter text-[10px] text-muted">
+                © {new Date().getFullYear()} NEPASET • Kathmandu, Nepal
+              </p>
+            </div>
+
           </div>
-        )}
-      </header>
+        </div>
+      )}
     </>
   )
 }
