@@ -13,8 +13,8 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "NEPASET — Youth Customization Brand",
-  description: "Customized apparel and accessories for students and young people in Nepal.",
+  title: "NEPASET •",
+  description: "Nepal's premier youth customization & lifestyle brand. Customize your apparel, phone cases, and more.",
 };
 
 export default function RootLayout({

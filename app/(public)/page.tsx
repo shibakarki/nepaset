@@ -59,19 +59,16 @@ function HeroSection() {
   // ── 2. DOM-imperative queue animation (mirrors reference JS exactly) ──
   useEffect(() => {
     if (products.length === 0) return
-    // Guard against null first
     if (!showcaseRef.current) return
-    // Assert strictly as HTMLDivElement to guarantee non-null types inside nested closures
     const showcase = showcaseRef.current as HTMLDivElement
 
-    // --- Config (matches reference) ---
     const visibleCount = 5
     const holdDuration = 2600
     const transitionDuration = 1000
     const intervalDuration = holdDuration + transitionDuration
-    const swipeThreshold = 55
+    const swipeThreshold = 45 // Lowered swipe threshold for more responsive mobile swiping
     const wheelCooldown = 800
-    const imageFallbackUrl = ''   // blank — no external fallback needed; guard below
+    const imageFallbackUrl = ''
 
     let currentIndex = 0
     let intervalId: ReturnType<typeof setInterval> | null = null
@@ -81,7 +78,6 @@ function HeroSection() {
     let startX = 0
     let lastWheelTime = 0
 
-    // Build the product list, padding to at least visibleCount items
     const db: HeroProduct[] =
       products.length >= visibleCount
         ? products
@@ -97,7 +93,6 @@ function HeroSection() {
       return db[((index % len) + len) % len]
     }
 
-    // ── Card DOM builder — maps images[0] to img src, preserves onerror ──
     function createCardDOM(product: HeroProduct, positionClass: string): HTMLDivElement {
       const card = document.createElement('div')
       card.className = `hero-product-card ${positionClass}`
@@ -112,12 +107,12 @@ function HeroSection() {
       card.innerHTML = `
         <a
           href="/shop/${product.slug}"
-          class="hero-card-inner"
+          class="hero-card-inner active:scale-[0.97] transition-transform duration-150"
           draggable="false"
           tabindex="${positionClass === 'pos-3' ? '0' : '-1'}"
           aria-label="View ${product.name}"
         >
-          <div class="hero-card-img-wrap">
+          <div class="hero-card-img-wrap shadow-inner">
             ${
               primaryImage
                 ? `<img
@@ -138,7 +133,6 @@ function HeroSection() {
       return card
     }
 
-    // ── 5A. Forward (right-to-left) ──────────────────
     function rotateQueueForward() {
       const leftCard = showcase.querySelector('.pos-1')
       if (leftCard) {
@@ -149,7 +143,6 @@ function HeroSection() {
         const card = showcase.querySelector(`.pos-${i}`)
         if (card) {
           card.className = `hero-product-card pos-${i - 1}`
-          // Only front card is focusable / linked
           const anchor = card.querySelector('a')
           if (anchor) anchor.tabIndex = i - 1 === 3 ? 0 : -1
         }
@@ -157,12 +150,11 @@ function HeroSection() {
       const nextProduct = getProductAt(currentIndex + visibleCount)
       const newCard = createCardDOM(nextProduct, 'entering-right')
       showcase.appendChild(newCard)
-      newCard.getBoundingClientRect() // force reflow
+      newCard.getBoundingClientRect()
       newCard.className = 'hero-product-card pos-5'
       currentIndex++
     }
 
-    // ── 5B. Backward (left-to-right) ─────────────────
     function rotateQueueBackward() {
       const rightCard = showcase.querySelector('.pos-5')
       if (rightCard) {
@@ -180,12 +172,11 @@ function HeroSection() {
       const prevProduct = getProductAt(currentIndex - 1)
       const newCard = createCardDOM(prevProduct, 'entering-left')
       showcase.insertBefore(newCard, showcase.firstChild)
-      newCard.getBoundingClientRect() // force reflow
+      newCard.getBoundingClientRect()
       newCard.className = 'hero-product-card pos-1'
       currentIndex--
     }
 
-    // ── Timers ────────────────────────────────────────
     function startTimer() {
       if (intervalId) clearInterval(intervalId)
       intervalId = setInterval(rotateQueueForward, intervalDuration)
@@ -197,7 +188,6 @@ function HeroSection() {
       }
     }
 
-    // ── 4. Init ───────────────────────────────────────
     showcase.innerHTML = ''
     for (let i = 0; i < visibleCount; i++) {
       const card = createCardDOM(getProductAt(i), `pos-${i + 1}`)
@@ -205,11 +195,9 @@ function HeroSection() {
     }
     startTimer()
 
-    // ── Hover pause ───────────────────────────────────
     function onMouseEnter() { isPaused = true; stopTimer() }
     function onMouseLeave() { isPaused = false; if (!isDragging) startTimer() }
 
-    // ── Pointer (drag / touch swipe) ─────────────────
     function onPointerDown(e: PointerEvent) {
       if (e.pointerType === 'mouse' && e.button !== 0) return
       isDragging = true
@@ -239,7 +227,6 @@ function HeroSection() {
       if (!isPaused) startTimer()
     }
 
-    // ── Wheel — only intercept horizontal-dominant ───
     function onWheel(e: WheelEvent) {
       if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) {
         e.preventDefault()
@@ -273,17 +260,15 @@ function HeroSection() {
 
   return (
     <>
-      {/* ── Scoped card styles injected once ── */}
       <style>{`
-        /* --- Card Base --- */
         .hero-product-card {
           position: absolute;
           top: 50%;
           width: clamp(140px, 16vw, 230px);
           height: clamp(190px, 22vw, 320px);
-          background: #ffffff;
+          background: var(--background, #ffffff);
           border-radius: 14px;
-          border: 1px solid rgba(0,0,0,0.06);
+          border: 1px solid var(--border, rgba(0,0,0,0.06));
           padding: 14px;
           display: flex;
           flex-direction: column;
@@ -296,7 +281,6 @@ function HeroSection() {
             box-shadow 1.3s ease-out;
         }
 
-        /* --- Position Nodes (horizontal depth queue) --- */
         .hero-product-card.pos-1 {
           left: 10%;
           transform: translate(-50%, -50%) scale(0.72);
@@ -334,7 +318,6 @@ function HeroSection() {
           box-shadow: 0 5px 15px rgba(0,0,0,0.02);
         }
 
-        /* --- Off-screen enter states --- */
         .hero-product-card.entering-right {
           left: 120%;
           transform: translate(-50%, -50%) scale(0.6);
@@ -348,7 +331,6 @@ function HeroSection() {
           z-index: 0;
         }
 
-        /* --- Exit states — gravity easing (ease-in) --- */
         .hero-product-card.exiting-left {
           transition:
             left  1s cubic-bezier(0.32, 0, 0.67, 0),
@@ -370,7 +352,6 @@ function HeroSection() {
           z-index: 0;
         }
 
-        /* --- Inner card layout --- */
         .hero-card-inner {
           display: flex;
           flex-direction: column;
@@ -380,12 +361,12 @@ function HeroSection() {
           outline-offset: 3px;
         }
         .hero-card-inner:focus-visible {
-          outline: 2px solid #0a0a0a;
+          outline: 2px solid var(--foreground);
         }
         .hero-card-img-wrap {
           width: 100%;
           flex: 1;
-          background-color: #f4f4f4;
+          background-color: var(--surface-2, #f4f4f4);
           border-radius: 8px;
           overflow: hidden;
           display: flex;
@@ -402,7 +383,7 @@ function HeroSection() {
         .hero-card-img-placeholder {
           width: 100%;
           height: 100%;
-          background: #ebebeb;
+          background: var(--border, #ebebeb);
         }
         .hero-card-details {
           padding-top: 10px;
@@ -412,14 +393,14 @@ function HeroSection() {
           font-size: 0.6rem;
           text-transform: uppercase;
           letter-spacing: 1.5px;
-          color: #999;
+          color: var(--muted);
           margin-bottom: 3px;
           font-family: var(--font-inter, sans-serif);
         }
         .hero-card-title {
           font-size: 0.8rem;
           font-weight: 600;
-          color: #0a0a0a;
+          color: var(--foreground);
           line-height: 1.3;
           font-family: var(--font-space, sans-serif);
           margin: 0;
@@ -428,27 +409,26 @@ function HeroSection() {
           text-overflow: ellipsis;
         }
 
-        /* --- Mobile Breakpoints & 3-Card layout Re-optimization --- */
+        /* Responsive spacing for dark and light modes on mobile */
         @media (max-width: 991px) {
           .hero-product-card {
-            width: clamp(72px, 18vw, 110px);
-            height: clamp(100px, 25vw, 155px);
-            border-radius: 10px;
-            padding: 8px;
+            width: clamp(90px, 22vw, 130px);
+            height: clamp(125px, 30vw, 180px);
+            border-radius: 12px;
+            padding: 10px;
           }
           .hero-card-details {
-            padding-top: 5px;
+            padding-top: 6px;
           }
           .hero-card-category {
             display: none;
           }
           .hero-card-title {
-            font-size: 0.6rem;
+            font-size: 0.65rem;
           }
         }
 
         @media (max-width: 767px) {
-          /* 1. Hide outer-edge cards (pos-1, pos-5, and exit nodes) entirely to leave exactly 3 visible cards */
           .hero-product-card.pos-1,
           .hero-product-card.pos-5,
           .hero-product-card.entering-left,
@@ -460,11 +440,10 @@ function HeroSection() {
             pointer-events: none !important;
           }
 
-          /* 2. Position the remaining 3 cards, making background ones much smaller and layered */
           .hero-product-card.pos-2 {
-            left: 16%;
-            transform: translate(-50%, -50%) scale(0.66) rotate(-3deg);
-            opacity: 0.5;
+            left: 15%;
+            transform: translate(-50%, -50%) scale(0.68) rotate(-3deg);
+            opacity: 0.45;
             z-index: 3;
           }
           .hero-product-card.pos-3 {
@@ -476,86 +455,84 @@ function HeroSection() {
             box-shadow: 0 15px 35px rgba(0,0,0,0.12);
           }
           .hero-product-card.pos-4 {
-            left: 84%;
-            transform: translate(-50%, -50%) scale(0.66) rotate(3deg);
-            opacity: 0.5;
+            left: 85%;
+            transform: translate(-50%, -50%) scale(0.68) rotate(3deg);
+            opacity: 0.45;
             z-index: 3;
           }
         }
       `}</style>
 
-      <section className="relative overflow-hidden border-b border-neutral-200 bg-[#ebebeb]">
-        {/* ── Split-screen flex container ── */}
+      <section className="relative overflow-hidden border-b border-border bg-surface-2">
         <div
           className="flex flex-col lg:flex-row w-full"
           style={{ minHeight: 'calc(100svh - 56px)' }}
         >
-          {/* LEFT PANE — existing copy & CTAs */}
+          {/* LEFT PANE — Content */}
           <div
             className="
               flex flex-col justify-center min-w-0
               w-full lg:w-1/2
               px-6 sm:px-8 md:px-12 lg:px-16
-              py-10 lg:py-20
+              py-12 lg:py-20
               order-2 lg:order-1
               text-center lg:text-left
-              border-r-0 lg:border-r border-neutral-200
+              border-r-0 lg:border-r border-border
             "
           >
             {/* Pill badge */}
-            <div className="inline-flex items-center justify-center lg:justify-start mb-5">
-              <span className="inline-flex items-center gap-2 bg-white border border-neutral-200 rounded-full px-3 py-1.5">
-                <span className="w-1.5 h-1.5 bg-black rounded-full" />
-                <span className="font-inter text-[10px] tracking-[0.12em] uppercase text-neutral-500">
+            <div className="inline-flex items-center justify-center lg:justify-start mb-6">
+              <span className="inline-flex items-center gap-2 bg-surface border border-border rounded-full px-3.5 py-1.5 shadow-sm">
+                <span className="w-1.5 h-1.5 bg-foreground rounded-full animate-ping" />
+                <span className="font-inter text-[10px] font-semibold tracking-[0.12em] uppercase text-muted">
                   Nepal&apos;s youth brand
                 </span>
               </span>
             </div>
 
             {/* Headline */}
-            <h1 className="font-space text-[2rem] sm:text-5xl md:text-6xl xl:text-7xl font-bold tracking-tight text-[#0a0a0a] leading-[1.06] mb-4">
+            <h1 className="font-space text-3xl sm:text-5xl md:text-6xl xl:text-7xl font-bold tracking-tight text-foreground leading-[1.06] mb-5">
               Wear who you{' '}
-              <span className="text-neutral-400">actually</span>{' '}
+              <span className="text-muted/60 font-normal">actually</span>{' '}
               are.
             </h1>
 
             {/* Description */}
-            <p className="font-inter text-sm md:text-base text-neutral-500 leading-relaxed max-w-sm mx-auto lg:mx-0 mb-7">
+            <p className="font-inter text-sm md:text-base text-muted leading-relaxed max-w-sm mx-auto lg:mx-0 mb-8">
               Custom apparel and accessories made in-house — designed for
               students and young people across Nepal.
             </p>
 
             {/* CTAs */}
-            <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-3">
+            <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-3 w-full max-w-md mx-auto lg:mx-0">
               <Link
                 href="/shop"
-                className="w-full sm:w-auto font-space text-sm font-semibold bg-[#0a0a0a] text-white px-6 py-3 rounded-md hover:opacity-90 active:scale-[0.98] transition-all text-center"
+                className="w-full sm:w-auto font-space text-sm font-semibold bg-foreground text-background px-8 py-3.5 rounded-xl hover:opacity-90 active:scale-[0.98] transition-all text-center shadow-md shadow-foreground/5 cursor-pointer"
               >
                 Shop now
               </Link>
               <Link
                 href="/shop"
-                className="w-full sm:w-auto font-space text-sm font-medium text-[#0a0a0a] border border-neutral-200 bg-white px-6 py-3 rounded-md hover:bg-neutral-50 active:scale-[0.98] transition-all text-center"
+                className="w-full sm:w-auto font-space text-sm font-medium text-foreground border border-border bg-surface px-8 py-3.5 rounded-xl hover:bg-surface-2 active:scale-[0.98] transition-all text-center cursor-pointer"
               >
                 Browse all
               </Link>
             </div>
           </div>
 
-          {/* RIGHT PANE — interactive card queue */}
+          {/* RIGHT PANE — Interactive floating card queue */}
           <div
             className="
               relative w-full lg:w-1/2 shrink-0
               order-1 lg:order-2
               flex items-center justify-center
+              h-[300px] sm:h-[380px] lg:h-auto
+              overflow-hidden
             "
             style={{
-              height: 'clamp(200px, 50vw, 100svh)',
-              overflow: 'hidden',
-              background: 'radial-gradient(circle at 60% 50%, #e4e2de 0%, #ebebeb 70%)',
+              background: 'radial-gradient(circle at 50% 50%, var(--surface-3, #e4e2de) 0%, var(--surface-2, #ebebeb) 80%)',
             }}
           >
-            {/* Showcase container — pointer events & drag attached here */}
             <div
               ref={showcaseRef}
               className="relative w-full h-full"
@@ -574,25 +551,32 @@ function HeroSection() {
               }}
             />
 
-            {/* Scroll hint — fades out when products have loaded */}
+            {/* Scroll hint loader */}
             {products.length === 0 && (
               <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                 <div className="flex gap-2">
-                  {Array.from({ length: 5 }).map((_, i) => (
+                  {Array.from({ length: 3 }).map((_, i) => (
                     <div
                       key={i}
-                      className="bg-neutral-300 rounded-lg animate-pulse"
+                      className="bg-border/60 rounded-xl animate-pulse"
                       style={{
-                        width: `clamp(100px, 12vw, 180px)`,
-                        height: `clamp(140px, 16vw, 250px)`,
-                        opacity: 1 - i * 0.18,
-                        transform: `scale(${1 - i * 0.06})`,
+                        width: `clamp(90px, 20vw, 150px)`,
+                        height: `clamp(120px, 25vw, 210px)`,
+                        opacity: 1 - i * 0.25,
+                        transform: `scale(${1 - i * 0.1})`,
                       }}
                     />
                   ))}
                 </div>
               </div>
             )}
+
+            {/* Swipe prompt for touch screens */}
+            <div className="absolute bottom-4 inset-x-0 flex justify-center pointer-events-none md:hidden">
+              <span className="bg-surface/75 backdrop-blur-md border border-border text-[10px] text-muted rounded-full px-3 py-1 font-inter tracking-wider uppercase">
+                ← Swipe to browse →
+              </span>
+            </div>
           </div>
         </div>
       </section>
@@ -644,38 +628,38 @@ const categories = [
 
 function CategoriesSection() {
   return (
-    <section className="bg-white px-6 py-14">
+    <section className="bg-surface px-6 py-16">
       <div className="max-w-5xl mx-auto">
-        <p className="font-inter text-[10px] tracking-[0.12em] uppercase text-neutral-500 mb-1">
+        <p className="font-inter text-[10px] tracking-[0.12em] uppercase text-muted mb-1 font-semibold">
           Categories
         </p>
-        <h2 className="font-space text-2xl font-bold tracking-tight text-[#0a0a0a] mb-1">
+        <h2 className="font-space text-2xl md:text-3xl font-bold tracking-tight text-foreground mb-1">
           What we make
         </h2>
-        <p className="font-inter text-sm text-neutral-500 mb-8">
+        <p className="font-inter text-sm text-muted mb-8">
           Four product lines, fully customizable.
         </p>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3.5">
           {categories.map(cat => (
             <Link
               key={cat.name}
               href={cat.href}
-              className="group bg-white border border-neutral-200 rounded-xl p-5 hover:bg-[#ebebeb] hover:border-neutral-300 transition-all"
+              className="group bg-surface border border-border rounded-2xl p-5 hover:bg-surface-2 hover:border-muted transition-all active:scale-[0.98] cursor-pointer duration-200"
             >
-              <div className="w-10 h-10 bg-[#0a0a0a] rounded-lg flex items-center justify-center mb-4">
+              <div className="w-10 h-10 bg-foreground text-background rounded-xl flex items-center justify-center mb-5 group-hover:scale-105 transition-transform">
                 <svg
                   width="18" height="18" viewBox="0 0 24 24"
-                  fill="none" stroke="white"
+                  fill="none" stroke="currentColor"
                   strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"
                 >
                   {cat.icon}
                 </svg>
               </div>
-              <p className="font-space text-sm font-semibold text-[#0a0a0a] mb-0.5">
+              <p className="font-space text-sm font-semibold text-foreground mb-0.5">
                 {cat.name}
               </p>
-              <p className="font-inter text-xs text-neutral-500">{cat.desc}</p>
+              <p className="font-inter text-xs text-muted leading-normal">{cat.desc}</p>
             </Link>
           ))}
         </div>
@@ -687,20 +671,20 @@ function CategoriesSection() {
 /* ── Customize Band ───────────────────────────────── */
 function CustomizeBand() {
   return (
-    <section className="bg-[#0a0a0a] px-6 py-10 border-y border-neutral-800">
+    <section className="bg-foreground text-background px-6 py-12 border-y border-border">
       <div className="max-w-5xl mx-auto flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
         <div>
-          <h2 className="font-space text-xl font-bold text-white tracking-tight mb-1.5">
+          <h2 className="font-space text-xl font-bold text-background tracking-tight mb-2">
             Got a design in mind?
           </h2>
-          <p className="font-inter text-sm text-neutral-400 max-w-sm leading-relaxed">
+          <p className="font-inter text-sm text-background/70 max-w-sm leading-relaxed">
             Upload your artwork or describe what you want — we&apos;ll produce it.
             Group orders welcome.
           </p>
         </div>
         <Link
           href="/shop"
-          className="font-space text-sm font-semibold bg-white text-[#0a0a0a] px-5 py-2.5 rounded-md whitespace-nowrap hover:opacity-90 active:scale-[0.98] transition-all shrink-0"
+          className="font-space text-sm font-semibold bg-background text-foreground px-6 py-3 rounded-xl whitespace-nowrap hover:opacity-90 active:scale-[0.98] transition-all shrink-0 cursor-pointer shadow-md"
         >
           Browse products →
         </Link>
@@ -730,31 +714,31 @@ const steps = [
 
 function HowItWorksSection() {
   return (
-    <section className="bg-white px-6 py-14">
+    <section className="bg-surface px-6 py-16">
       <div className="max-w-5xl mx-auto">
-        <p className="font-inter text-[10px] tracking-[0.12em] uppercase text-neutral-500 mb-1">
+        <p className="font-inter text-[10px] tracking-[0.12em] uppercase text-muted mb-1 font-semibold">
           How it works
         </p>
-        <h2 className="font-space text-2xl font-bold tracking-tight text-[#0a0a0a] mb-1">
+        <h2 className="font-space text-2xl md:text-3xl font-bold tracking-tight text-foreground mb-1">
           Three steps
         </h2>
-        <p className="font-inter text-sm text-neutral-500 mb-8">
+        <p className="font-inter text-sm text-muted mb-8">
           From idea to delivered product.
         </p>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {steps.map(s => (
             <div
               key={s.num}
-              className="border border-neutral-200 rounded-xl p-6 bg-white"
+              className="border border-border rounded-2xl p-6 bg-surface hover:bg-surface-2 transition-colors duration-200"
             >
-              <p className="font-space text-3xl font-bold text-neutral-200 mb-3 select-none">
+              <p className="font-space text-3xl font-bold text-muted/30 mb-3 select-none">
                 {s.num}
               </p>
-              <p className="font-space text-sm font-semibold text-[#0a0a0a] mb-1.5">
+              <p className="font-space text-sm font-semibold text-foreground mb-1.5">
                 {s.title}
               </p>
-              <p className="font-inter text-xs text-neutral-500 leading-relaxed">
+              <p className="font-inter text-xs text-muted leading-relaxed">
                 {s.desc}
               </p>
             </div>
@@ -806,38 +790,38 @@ const features = [
 
 function WhyNepasetSection() {
   return (
-    <section className="bg-[#ebebeb] px-6 py-14">
+    <section className="bg-surface-2 px-6 py-16 border-y border-border">
       <div className="max-w-5xl mx-auto">
-        <p className="font-inter text-[10px] tracking-[0.12em] uppercase text-neutral-500 mb-1">
+        <p className="font-inter text-[10px] tracking-[0.12em] uppercase text-muted mb-1 font-semibold">
           Why NEPASET
         </p>
-        <h2 className="font-space text-2xl font-bold tracking-tight text-[#0a0a0a] mb-1">
+        <h2 className="font-space text-2xl md:text-3xl font-bold tracking-tight text-foreground mb-1">
           Built different
         </h2>
-        <p className="font-inter text-sm text-neutral-500 mb-8">
+        <p className="font-inter text-sm text-muted mb-8">
           Not just a print shop.
         </p>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
           {features.map(f => (
             <div
               key={f.title}
-              className="bg-white border border-neutral-200 rounded-xl p-5 flex gap-4 items-start"
+              className="bg-surface border border-border rounded-2xl p-6 flex gap-4 items-start hover:border-muted transition-colors duration-200"
             >
-              <div className="w-9 h-9 bg-[#ebebeb] rounded-lg flex items-center justify-center shrink-0">
+              <div className="w-10 h-10 bg-surface-2 rounded-xl flex items-center justify-center shrink-0">
                 <svg
-                  width="16" height="16" viewBox="0 0 24 24"
-                  fill="none" stroke="#0a0a0a"
+                  width="18" height="18" viewBox="0 0 24 24"
+                  fill="none" stroke="currentColor"
                   strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"
                 >
                   {f.icon}
                 </svg>
               </div>
-              <div>
-                <p className="font-space text-sm font-semibold text-[#0a0a0a] mb-1">
+              <div className="space-y-1">
+                <p className="font-space text-sm font-semibold text-foreground">
                   {f.title}
                 </p>
-                <p className="font-inter text-xs text-neutral-500 leading-relaxed">
+                <p className="font-inter text-xs text-muted leading-relaxed">
                   {f.desc}
                 </p>
               </div>
@@ -852,24 +836,24 @@ function WhyNepasetSection() {
 /* ── Bottom CTA ───────────────────────────────────── */
 function CtaBand() {
   return (
-    <section className="bg-[#ebebeb] px-6 py-16 text-center border-t border-neutral-200">
+    <section className="bg-surface px-6 py-20 text-center">
       <div className="max-w-lg mx-auto">
-        <h2 className="font-space text-2xl md:text-3xl font-bold tracking-tight text-[#0a0a0a] mb-3">
+        <h2 className="font-space text-2xl md:text-3xl font-bold tracking-tight text-foreground mb-4">
           Ready to create something?
         </h2>
-        <p className="font-inter text-sm text-neutral-500 mb-8 leading-relaxed">
+        <p className="font-inter text-sm text-muted mb-8 leading-relaxed">
           Join students across Nepal who wear what they actually believe in.
         </p>
-        <div className="flex items-center justify-center gap-3 flex-wrap">
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-3 w-full max-w-sm mx-auto">
           <Link
             href="/shop"
-            className="font-space text-sm font-semibold bg-[#0a0a0a] text-white px-6 py-2.5 rounded-md hover:opacity-90 active:scale-[0.98] transition-all"
+            className="w-full sm:w-auto font-space text-sm font-semibold bg-foreground text-background px-8 py-3 rounded-xl hover:opacity-90 active:scale-[0.98] transition-all cursor-pointer shadow-md"
           >
             Browse products
           </Link>
           <Link
             href="/shop"
-            className="font-space text-sm font-medium text-[#0a0a0a] border border-neutral-200 bg-white px-6 py-2.5 rounded-md hover:bg-neutral-50 active:scale-[0.98] transition-all"
+            className="w-full sm:w-auto font-space text-sm font-medium text-foreground border border-border bg-surface px-8 py-3 rounded-xl hover:bg-surface-2 active:scale-[0.98] transition-all cursor-pointer"
           >
             View all categories
           </Link>

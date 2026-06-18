@@ -10,7 +10,7 @@ export function Footer() {
   ]
   const company = [
     { href: '/about', label: 'About' },
-    { href: '/contact', label: 'Contact' }, // ADDED Contact link
+    { href: '/contact', label: 'Contact' },
   ]
   const account = [
     { href: '/auth/login', label: 'Sign In' },
@@ -19,27 +19,27 @@ export function Footer() {
 
   return (
     <footer className="border-t border-border bg-surface mt-auto">
-      <div className="max-w-6xl mx-auto px-4 py-10">
+      <div className="max-w-6xl mx-auto px-4 py-12">
 
         {/* Top row */}
-        <div className="flex flex-col md:flex-row justify-between gap-10 mb-8">
+        <div className="flex flex-col md:flex-row justify-between gap-12 mb-8">
 
-          {/* Brand */}
-          <div>
+          {/* Brand info */}
+          <div className="space-y-3">
             <Link
               href="/"
-              className="font-space text-base font-bold tracking-tight text-foreground flex items-center gap-0.5 mb-2"
+              className="font-space text-base font-bold tracking-tight text-foreground flex items-center gap-0.5"
             >
               NEPASET
               <span className="inline-block w-1.5 h-1.5 bg-foreground rounded-full mb-0.5 ml-0.5" />
             </Link>
-            <p className="font-inter text-xs text-muted max-w-50 leading-relaxed">
+            <p className="font-inter text-xs text-muted max-w-xs leading-relaxed">
               Nepal&apos;s youth customization &amp; lifestyle brand.
             </p>
           </div>
 
-          {/* Link columns */}
-          <div className="flex gap-12 md:gap-16">
+          {/* Responsive link columns */}
+          <div className="grid grid-cols-2 gap-x-8 gap-y-10 sm:flex sm:gap-16 md:gap-20">
             <FooterCol title="Shop" links={shop} />
             <FooterCol title="Company" links={company} />
             <FooterCol title="Account" links={account} />
@@ -47,13 +47,12 @@ export function Footer() {
         </div>
 
         {/* Bottom row */}
-        <div className="border-t border-border pt-5 flex flex-col md:flex-row justify-between items-center gap-3">
-          <p className="font-inter text-xs text-muted">
+        <div className="border-t border-border pt-6 flex flex-col sm:flex-row justify-between items-center gap-4">
+          <p className="font-inter text-[11px] text-muted text-center sm:text-left">
             © {new Date().getFullYear()} NEPASET. All rights reserved.
           </p>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
             <SocialLink href="https://www.instagram.com/nepaset/?utm_source=ig_web_button_share_sheet" label="Instagram">
-              {/* Correct Instagram icon */}
               <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
               <circle cx="12" cy="12" r="4" />
               <circle cx="17.5" cy="6.5" r="0.5" fill="currentColor" stroke="none" />
@@ -81,10 +80,10 @@ function FooterCol({
 }) {
   return (
     <div>
-      <p className="font-space text-xs font-semibold tracking-widest uppercase text-foreground mb-3">
+      <p className="font-space text-xs font-semibold tracking-widest uppercase text-foreground mb-4">
         {title}
       </p>
-      <ul className="space-y-2">
+      <ul className="space-y-2.5">
         {links.map(l => (
           <li key={l.href}>
             <Link
@@ -115,11 +114,11 @@ function SocialLink({
       target="_blank"
       rel="noopener noreferrer"
       aria-label={label}
-      className="w-7 h-7 border border-border rounded-md flex items-center justify-center hover:border-muted transition-colors text-foreground"
+      className="w-8 h-8 border border-border rounded-md flex items-center justify-center hover:border-muted transition-colors text-foreground"
     >
       <svg
-        width="12"
-        height="12"
+        width="14"
+        height="14"
         viewBox="0 0 24 24"
         fill="none"
         stroke="currentColor"
