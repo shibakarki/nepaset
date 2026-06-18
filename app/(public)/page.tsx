@@ -66,7 +66,7 @@ function HeroSection() {
     const holdDuration = 2600
     const transitionDuration = 1000
     const intervalDuration = holdDuration + transitionDuration
-    const swipeThreshold = 45 // Lowered swipe threshold for more responsive mobile swiping
+    const swipeThreshold = 45 
     const wheelCooldown = 800
     const imageFallbackUrl = ''
 
@@ -198,6 +198,7 @@ function HeroSection() {
     function onMouseEnter() { isPaused = true; stopTimer() }
     function onMouseLeave() { isPaused = false; if (!isDragging) startTimer() }
 
+    // Pointer event adjustments for mobile swiping
     function onPointerDown(e: PointerEvent) {
       if (e.pointerType === 'mouse' && e.button !== 0) return
       isDragging = true
@@ -261,14 +262,15 @@ function HeroSection() {
   return (
     <>
       <style>{`
+        /* --- Card Base (Light Mode) --- */
         .hero-product-card {
           position: absolute;
           top: 50%;
           width: clamp(140px, 16vw, 230px);
           height: clamp(190px, 22vw, 320px);
-          background: var(--background, #ffffff);
+          background: #ffffff;
           border-radius: 14px;
-          border: 1px solid var(--border, rgba(0,0,0,0.06));
+          border: 1px solid rgba(0,0,0,0.06);
           padding: 14px;
           display: flex;
           flex-direction: column;
@@ -281,6 +283,26 @@ function HeroSection() {
             box-shadow 1.3s ease-out;
         }
 
+        /* --- Dark Mode Overrides (Explicit Fix for Invisible Cards) --- */
+        .dark .hero-product-card {
+          background: #171717 !important;
+          border-color: #262626 !important;
+          box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4) !important;
+        }
+        .dark .hero-card-img-wrap {
+          background-color: #262626 !important;
+        }
+        .dark .hero-card-img-wrap img {
+          mix-blend-mode: normal !important; /* Disable multiply blend to make mockups fully visible */
+        }
+        .dark .hero-card-title {
+          color: #ffffff !important;
+        }
+        .dark .hero-card-category {
+          color: #a3a3a3 !important;
+        }
+
+        /* --- Position Nodes (Desktop view) --- */
         .hero-product-card.pos-1 {
           left: 10%;
           transform: translate(-50%, -50%) scale(0.72);
@@ -352,6 +374,7 @@ function HeroSection() {
           z-index: 0;
         }
 
+        /* --- Card Details & layout --- */
         .hero-card-inner {
           display: flex;
           flex-direction: column;
@@ -366,7 +389,7 @@ function HeroSection() {
         .hero-card-img-wrap {
           width: 100%;
           flex: 1;
-          background-color: var(--surface-2, #f4f4f4);
+          background-color: #f4f4f4;
           border-radius: 8px;
           overflow: hidden;
           display: flex;
@@ -383,7 +406,7 @@ function HeroSection() {
         .hero-card-img-placeholder {
           width: 100%;
           height: 100%;
-          background: var(--border, #ebebeb);
+          background: #ebebeb;
         }
         .hero-card-details {
           padding-top: 10px;
@@ -393,14 +416,14 @@ function HeroSection() {
           font-size: 0.6rem;
           text-transform: uppercase;
           letter-spacing: 1.5px;
-          color: var(--muted);
+          color: #999;
           margin-bottom: 3px;
           font-family: var(--font-inter, sans-serif);
         }
         .hero-card-title {
           font-size: 0.8rem;
           font-weight: 600;
-          color: var(--foreground);
+          color: #0a0a0a;
           line-height: 1.3;
           font-family: var(--font-space, sans-serif);
           margin: 0;
@@ -409,11 +432,11 @@ function HeroSection() {
           text-overflow: ellipsis;
         }
 
-        /* Responsive spacing for dark and light modes on mobile */
+        /* --- Sizing for Tablets & Medium Screens --- */
         @media (max-width: 991px) {
           .hero-product-card {
-            width: clamp(90px, 22vw, 130px);
-            height: clamp(125px, 30vw, 180px);
+            width: clamp(100px, 22vw, 130px);
+            height: clamp(135px, 30vw, 180px);
             border-radius: 12px;
             padding: 10px;
           }
@@ -428,7 +451,21 @@ function HeroSection() {
           }
         }
 
+        /* --- PROMINENT SIZING FOR PHONES (Fulfills exact request) --- */
         @media (max-width: 767px) {
+          /* 1. Base Dimensions (increased size from 110px max to 150px max) */
+          .hero-product-card {
+            width: clamp(110px, 28vw, 150px) !important;
+            height: clamp(155px, 38vw, 210px) !important;
+            border-radius: 14px;
+            padding: 12px;
+          }
+          
+          .hero-card-title {
+            font-size: 0.72rem !important;
+          }
+
+          /* Hide offscreen nodes strictly to prevent horizontal viewport leaks */
           .hero-product-card.pos-1,
           .hero-product-card.pos-5,
           .hero-product-card.entering-left,
@@ -440,24 +477,28 @@ function HeroSection() {
             pointer-events: none !important;
           }
 
+          /* 2. Side cards: Pull slightly outwards and make them smaller (scale 0.7) for high perspective contrast */
           .hero-product-card.pos-2 {
-            left: 15%;
-            transform: translate(-50%, -50%) scale(0.68) rotate(-3deg);
-            opacity: 0.45;
+            left: 13%;
+            transform: translate(-50%, -50%) scale(0.7) rotate(-4deg);
+            opacity: 0.4;
             z-index: 3;
           }
+          
+          /* 3. Central active card: Huge scale bump (scale 1.3) + prominent drop shadow */
           .hero-product-card.pos-3 {
             left: 50%;
-            transform: translate(-50%, -50%) scale(1.15);
+            transform: translate(-50%, -50%) scale(1.3) !important;
             opacity: 1;
             z-index: 5;
             pointer-events: auto;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.12);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.18) !important;
           }
+          
           .hero-product-card.pos-4 {
-            left: 85%;
-            transform: translate(-50%, -50%) scale(0.68) rotate(3deg);
-            opacity: 0.45;
+            left: 87%;
+            transform: translate(-50%, -50%) scale(0.7) rotate(4deg);
+            opacity: 0.4;
             z-index: 3;
           }
         }
@@ -526,7 +567,7 @@ function HeroSection() {
               relative w-full lg:w-1/2 shrink-0
               order-1 lg:order-2
               flex items-center justify-center
-              h-[300px] sm:h-[380px] lg:h-auto
+              h-[330px] sm:h-[400px] lg:h-auto
               overflow-hidden
             "
             style={{
@@ -573,7 +614,7 @@ function HeroSection() {
 
             {/* Swipe prompt for touch screens */}
             <div className="absolute bottom-4 inset-x-0 flex justify-center pointer-events-none md:hidden">
-              <span className="bg-surface/75 backdrop-blur-md border border-border text-[10px] text-muted rounded-full px-3 py-1 font-inter tracking-wider uppercase">
+              <span className="bg-surface/80 backdrop-blur-md border border-border text-[10px] text-muted rounded-full px-3 py-1 font-inter tracking-wider uppercase shadow-sm">
                 ← Swipe to browse →
               </span>
             </div>
