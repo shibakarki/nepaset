@@ -122,15 +122,15 @@ export function Navbar() {
             <span className="inline-block w-1.5 h-1.5 bg-foreground rounded-full mb-0.5 ml-0.5" />
           </Link>
 
-          {/* Desktop Nav Links */}
-          <nav className="hidden md:flex items-center gap-6 shrink-0">
+          {/* Desktop Nav Links (Perfectly Centered on Desktop) */}
+          <nav className="hidden md:flex items-center gap-7 shrink-0">
             {links.map(l => (
               <Link
                 key={l.href}
                 href={l.href}
                 className={`font-inter text-sm transition-colors ${
                   isActive(l.href)
-                    ? 'text-foreground font-medium'
+                    ? 'text-foreground font-semibold'
                     : 'text-muted hover:text-foreground'
                 }`}
               >
@@ -139,11 +139,37 @@ export function Navbar() {
             ))}
           </nav>
 
-          {/* Spacer block that keeps Navbar layout balanced in non-floating state */}
-          <div className="hidden sm:block w-[140px] sm:w-[180px] md:w-[240px] lg:w-[280px]" />
-
           {/* Header Controls */}
           <div className="flex items-center gap-0.5 z-10">
+
+            {/* INTEGRATED DESKTOP SEARCH BAR (Repositioned to the Left of the Cart) */}
+            {!isFloating && (
+              <form 
+                onSubmit={handleSearchSubmit}
+                className="hidden md:flex items-center gap-2 h-9 w-[180px] lg:w-[240px] px-3.5 rounded-xl border border-white/50 dark:border-neutral-800/50 bg-white/30 dark:bg-neutral-900/30 backdrop-blur-md mr-2.5 transition-all duration-300 shadow-[0_8px_32px_0_rgba(0,0,0,0.02)]"
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-muted shrink-0">
+                  <circle cx="11" cy="11" r="8" />
+                  <path d="M21 21l-4.3-4.3" />
+                </svg>
+                <input 
+                  type="text"
+                  placeholder="Search NEPASET..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="bg-transparent border-none outline-none text-xs text-foreground placeholder:text-muted/60 w-full"
+                />
+                {searchQuery && (
+                  <button 
+                    type="button" 
+                    onClick={() => setSearchQuery('')}
+                    className="text-muted hover:text-foreground text-xs font-semibold cursor-pointer"
+                  >
+                    ✕
+                  </button>
+                )}
+              </form>
+            )}
 
             {/* Cart */}
             <button
@@ -222,17 +248,17 @@ export function Navbar() {
         </div>
       </header>
 
-      {/* --- 2. DYNAMIC ISLAND SEARCH BAR (Morphs & detaches on scroll) --- */}
+      {/* --- 2. THE FLOATING / MOBILE INTEGRATED SEARCH BAR (With Liquid Glass sheen) --- */}
       <div className={`pointer-events-none fixed left-1/2 -translate-x-1/2 w-full max-w-6xl px-4 z-45 transition-all duration-500 ${
-        isFloating ? 'top-2.5' : 'top-3'
+        isFloating ? 'top-2.5' : 'top-3 md:hidden' // Hidden on desktop when not floating (md:hidden)
       }`}>
         <div className="relative w-full h-8 flex items-center justify-center">
           <form 
             onSubmit={handleSearchSubmit}
-            className={`pointer-events-auto transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] ${
+            className={`pointer-events-auto font-space text-xs px-4 py-3 border border-border bg-surface-2 rounded-xl text-foreground font-semibold hover:bg-surface active:scale-[0.98] transition-all flex items-center justify-between ${
               isFloating 
-                ? 'w-[200px] sm:w-[280px] h-9 rounded-full px-4 border border-border bg-surface/90 backdrop-blur-md shadow-[0_8px_30px_rgb(0,0,0,0.12)] flex items-center gap-2'
-                : 'w-[130px] sm:w-[180px] md:w-[240px] lg:w-[280px] h-8 rounded-lg px-3 border border-border/40 bg-surface-2 flex items-center gap-2'
+                ? 'w-[200px] sm:w-[280px] h-9 rounded-full border border-white/50 dark:border-neutral-800/50 bg-white/40 dark:bg-neutral-900/40 backdrop-blur-md shadow-[0_8px_32px_rgba(0,0,0,0.12)] flex items-center gap-2'
+                : 'w-[130px] sm:w-[180px] h-8 rounded-lg border border-white/50 dark:border-neutral-800/50 bg-white/40 dark:bg-neutral-900/40 backdrop-blur-md flex items-center gap-2'
             }`}
           >
             {/* Search Icon */}
@@ -264,7 +290,7 @@ export function Navbar() {
         </div>
       </div>
 
-      {/* --- 3. RE-DESIGNED MOBILE DRAWER (Now locked at strict z-[9999]) --- */}
+      {/* --- 3. MOBILE MENU DRAWER (Locked at absolute highest z-index z-[9999]) --- */}
       {mobileOpen && (
         <div className="md:hidden fixed inset-x-0 bottom-0 top-14 z-[9999] bg-black/40 dark:bg-black/70 backdrop-blur-sm">
           <div className="bg-surface border-b border-border h-full max-h-[85vh] overflow-y-auto shadow-2xl flex flex-col justify-between">
