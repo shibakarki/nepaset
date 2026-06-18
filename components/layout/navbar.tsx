@@ -51,7 +51,7 @@ export function Navbar() {
         setIsFloating(true)
       } else {
         setIsFloating(false)
-        setIsFocused(false) // Ensure focus state resets if scrolled back to top
+        setIsFocused(false) // Reset focus state when scrolled back to top
       }
     }
     window.addEventListener('scroll', handleScroll, { passive: true })
@@ -179,34 +179,36 @@ export function Navbar() {
           {/* Header Controls */}
           <div className="flex items-center gap-0.5 z-10">
 
-            {/* INTEGRATED DESKTOP SEARCH BAR (Liquid Glass Sheen, left of Cart) */}
-            {!isFloating && (
-              <form 
-                onSubmit={handleSearchSubmit}
-                className="hidden md:flex items-center gap-2 h-9 w-[180px] lg:w-[240px] px-3.5 rounded-xl transition-all duration-300 liquid-glass hover:bg-white/55 dark:hover:bg-neutral-900/55"
-              >
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-muted shrink-0">
-                  <circle cx="11" cy="11" r="8" />
-                  <path d="M21 21l-4.3-4.3" />
-                </svg>
-                <input 
-                  type="text"
-                  placeholder="Search NEPASET..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="bg-transparent border-none outline-none text-xs text-foreground placeholder:text-muted/60 w-full focus:ring-0"
-                />
-                {searchQuery && (
-                  <button 
-                    type="button" 
-                    onClick={() => setSearchQuery('')}
-                    className="text-muted hover:text-foreground text-xs font-semibold cursor-pointer"
-                  >
-                    ✕
-                  </button>
-                )}
-              </form>
-            )}
+            {/* INTEGRATED DESKTOP SEARCH BAR (Smoothly morphs, scales, and collapses on scroll) */}
+            <form 
+              onSubmit={handleSearchSubmit}
+              className={`hidden md:flex items-center gap-2 h-9 px-3.5 rounded-xl border border-white/50 dark:border-neutral-800/50 bg-white/30 dark:bg-neutral-900/30 backdrop-blur-md transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] shadow-[0_8px_32px_0_rgba(0,0,0,0.02)] origin-right ${
+                isFloating 
+                  ? 'opacity-0 scale-75 -translate-y-4 pointer-events-none w-0 mr-0 border-transparent bg-transparent' 
+                  : 'opacity-100 scale-100 w-[180px] lg:w-[240px] mr-2.5'
+              }`}
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-muted shrink-0">
+                <circle cx="11" cy="11" r="8" />
+                <path d="M21 21l-4.3-4.3" />
+              </svg>
+              <input 
+                type="text"
+                placeholder="Search NEPASET..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="bg-transparent border-none outline-none text-xs text-foreground placeholder:text-muted/60 w-full"
+              />
+              {searchQuery && (
+                <button 
+                  type="button" 
+                  onClick={() => setSearchQuery('')}
+                  className="text-muted hover:text-foreground text-xs font-semibold cursor-pointer"
+                >
+                  ✕
+                </button>
+              )}
+            </form>
 
             {/* Cart */}
             <button
@@ -245,11 +247,11 @@ export function Navbar() {
               )}
             </Link>
 
-            {/* Theme toggle */}
+            {/* Theme toggle (Permanently visible on all screens, including phones!) */}
             <button
               type="button"
               onClick={toggleTheme}
-              className="hidden sm:flex w-10 h-10 items-center justify-center rounded-md hover:bg-surface-2 transition-colors text-foreground cursor-pointer focus-visible:outline-none"
+              className="flex w-10 h-10 items-center justify-center rounded-md hover:bg-surface-2 transition-colors text-foreground cursor-pointer focus-visible:outline-none"
               aria-label="Toggle theme"
             >
               <svg className="block dark:hidden" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
@@ -292,13 +294,13 @@ export function Navbar() {
         <div className="relative w-full h-8 flex items-center justify-center">
           <form 
             onSubmit={handleSearchSubmit}
-            onFocus={() => setIsFloating(true)} // Retain floating style if interacted with
+            onFocus={() => setIsFloating(true)} 
             className={`pointer-events-auto transition-all duration-500 spring-ease liquid-glass ${
               isFloating 
                 ? isFocused
-                  ? 'w-[260px] sm:w-[350px] h-9.5 rounded-full px-4.5 flex items-center gap-2 border-white/60 dark:border-neutral-700/60 shadow-[0_12px_40px_rgba(0,0,0,0.18)]' // Expands on Focus!
-                  : 'w-[190px] sm:w-[270px] h-9 rounded-full px-4 flex items-center gap-2' // Compact default floating
-                : 'w-[130px] sm:w-[180px] h-8 rounded-lg px-3 flex items-center gap-2' // Non-floating mobile centered
+                  ? 'w-[260px] sm:w-[350px] h-9.5 rounded-full px-4.5 flex items-center gap-2 border-white/60 dark:border-neutral-700/60 shadow-[0_12px_40px_rgba(0,0,0,0.18)]' 
+                  : 'w-[190px] sm:w-[270px] h-9 rounded-full px-4 flex items-center gap-2' 
+                : 'w-[130px] sm:w-[180px] h-8 rounded-lg px-3 flex items-center gap-2' 
             }`}
           >
             {/* Search Icon */}
@@ -353,7 +355,7 @@ export function Navbar() {
                     <Link
                       href="/account"
                       onClick={() => setMobileOpen(false)}
-                      className="flex-1 text-center font-space text-xs font-semibold bg-surface border border-border text-foreground py-2.5 rounded-xl hover:bg-surface-2 transition-colors active:scale-[0.98]"
+                      className="flex-1 text-center font-space text-xs font-semibold bg-surface border border-border text-foreground py-2 rounded-lg hover:bg-surface-2 transition-colors active:scale-[0.98]"
                     >
                       My Account
                     </Link>
@@ -416,6 +418,36 @@ export function Navbar() {
                     </Link>
                   ))}
                 </nav>
+              </div>
+
+              {/* Mobile Drawer Dedicated Theme Selector Row (Highly Accessible!) */}
+              <div className="space-y-3">
+                <p className="font-space text-xs font-bold tracking-widest uppercase text-muted">Display Preference</p>
+                <div className="bg-surface-2/40 border border-border rounded-2xl p-4 flex items-center justify-between shadow-inner">
+                  <span className="font-space text-xs font-semibold text-muted">Theme</span>
+                  <button
+                    type="button"
+                    onClick={toggleTheme}
+                    className="flex items-center gap-2 font-inter text-xs px-4 py-2 bg-surface border border-border rounded-xl text-foreground font-medium active:scale-[0.98] transition-transform cursor-pointer"
+                  >
+                    {theme === 'dark' ? (
+                      <>
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+                          <circle cx="12" cy="12" r="4.5" />
+                          <path d="M12 2v2.2M12 19.8V22M4.9 4.9l1.55 1.55M17.55 17.55l1.55 1.55M2 12h2.2M19.8 12H22M4.9 19.1l1.55-1.55M17.55 6.45l1.55-1.55" />
+                        </svg>
+                        Light Mode
+                      </>
+                    ) : (
+                      <>
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z" />
+                        </svg>
+                        Dark Mode
+                      </>
+                    )}
+                  </button>
+                </div>
               </div>
 
               {/* Social Links */}
