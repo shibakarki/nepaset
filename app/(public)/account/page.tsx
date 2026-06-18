@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { createClient } from "@/lib/supabase/server";
+import { createClient } from "@/lib/supabase/client";
 import { ORDER_STATUS_COLORS, ORDER_STATUS_LABELS, type OrderStatus } from "@/types/admin";
 import { SignOutButton } from "@/components/account/SignOutButton";
 import { OrderSuccessToast } from "@/components/account/OrderSuccessToast";
@@ -80,24 +80,26 @@ export default async function AccountPage({
       {/* Order success toast */}
       {showOrderSuccess && <OrderSuccessToast />}
 
-      {/* Header */}
-      <div className="flex items-start justify-between mb-10">
+      {/* Responsive Header (Adapts perfectly on phone screens) */}
+      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-6 mb-10">
         <div>
-          <p className="text-xs font-medium uppercase tracking-[0.12em] text-muted mb-1">
+          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted mb-1">
             My Account
           </p>
-          <h1 className="font-space text-3xl font-medium text-foreground tracking-tight">
+          <h1 className="font-space text-3xl font-bold text-foreground tracking-tight">
             {displayName}
           </h1>
-          <p className="text-sm text-muted mt-1">
+          <p className="text-xs text-muted mt-1.5">
             Member since {memberSince}
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        
+        {/* Header Action Buttons */}
+        <div className="flex items-center gap-2 w-full sm:w-auto">
           {isAdmin && (
             <Link
               href="/admin"
-              className="flex items-center gap-1.5 text-xs font-medium px-3 py-2 border border-border rounded-lg text-muted hover:text-foreground hover:border-foreground transition-colors"
+              className="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 text-xs font-semibold px-4 py-2.5 border border-border rounded-xl text-muted hover:text-foreground hover:border-foreground transition-all active:scale-[0.98]"
             >
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
                 <rect x="3" y="3" width="7" height="7" />
@@ -113,14 +115,14 @@ export default async function AccountPage({
       </div>
 
       {/* Profile card */}
-      <section className="border border-border rounded-xl p-6 mb-8 bg-surface">
-        <h2 className="text-xs font-medium uppercase tracking-widest text-muted mb-5">
+      <section className="border border-border rounded-2xl p-6 mb-8 bg-surface">
+        <h2 className="text-xs font-semibold uppercase tracking-widest text-muted mb-5">
           Profile
         </h2>
-        <div className="space-y-3">
+        <div className="space-y-4">
           <div className="flex items-center justify-between text-sm">
             <span className="text-muted">Name</span>
-            <span className="text-foreground font-medium">
+            <span className="text-foreground font-semibold">
               {profile?.full_name ?? "—"}
             </span>
           </div>
@@ -132,23 +134,23 @@ export default async function AccountPage({
         </div>
       </section>
 
-      {/* Orders */}
+      {/* Orders Section */}
       <section>
         <div className="flex items-center justify-between mb-5">
-          <h2 className="text-xs font-medium uppercase tracking-widest text-muted">
+          <h2 className="text-xs font-semibold uppercase tracking-widest text-muted">
             Order history
           </h2>
-          <span className="text-xs text-muted">
+          <span className="text-xs text-muted font-medium">
             {orders.length} {orders.length === 1 ? "order" : "orders"}
           </span>
         </div>
 
         {orders.length === 0 ? (
-          <div className="border border-dashed border-border rounded-xl p-12 text-center">
+          <div className="border border-dashed border-border rounded-2xl p-12 text-center bg-surface-2/20">
             <p className="text-sm text-muted mb-4">No orders yet.</p>
             <Link
               href="/shop"
-              className="text-xs font-medium px-4 py-2 bg-foreground text-background rounded-lg hover:opacity-90 transition-colors"
+              className="inline-block text-xs font-semibold px-5 py-2.5 bg-foreground text-background rounded-xl hover:opacity-95 active:scale-[0.98] transition-all"
             >
               Browse shop
             </Link>
@@ -158,20 +160,19 @@ export default async function AccountPage({
             {orders.map((order) => (
               <div
                 key={order.id}
-                className="border border-border rounded-xl p-5 bg-surface transition-all duration-150"
+                className="border border-border rounded-2xl p-5 bg-surface hover:border-muted active:scale-[0.99] transition-all duration-200"
               >
                 {/* Order Top Bar Info */}
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border pb-4 mb-4">
                   <div>
                     <div className="flex items-center gap-2 mb-1.5">
-                      <span className="font-mono text-xs font-medium text-foreground">
+                      <span className="font-mono text-xs font-semibold text-foreground">
                         #{order.id.slice(0, 8).toUpperCase()}
                       </span>
                       <span
-                        className={[
-                          "text-[10px] font-medium px-2 py-0.5 rounded-full border",
-                          ORDER_STATUS_COLORS[order.status as OrderStatus],
-                        ].join(" ")}
+                        className={`text-[10px] font-semibold px-2.5 py-0.5 rounded-full border shadow-sm ${
+                          ORDER_STATUS_COLORS[order.status as OrderStatus]
+                        }`}
                       >
                         {ORDER_STATUS_LABELS[order.status as OrderStatus]}
                       </span>
@@ -185,8 +186,8 @@ export default async function AccountPage({
                     </p>
                   </div>
                   <div className="sm:text-right">
-                    <p className="text-xs text-muted mb-0.5">Total Amount</p>
-                    <p className="text-sm font-semibold text-foreground">
+                    <p className="text-[10px] text-muted tracking-wider uppercase mb-0.5">Total Amount</p>
+                    <p className="text-sm font-bold text-foreground">
                       Rs. {Number(order.total_amount || 0).toLocaleString("en-NP")}
                     </p>
                   </div>
@@ -200,9 +201,9 @@ export default async function AccountPage({
                     const imageUrl = product?.images?.[0];
 
                     return (
-                      <div key={item.id} className="flex gap-3 items-center">
+                      <div key={item.id} className="flex gap-3.5 items-center">
                         {/* Product Image preview */}
-                        <div className="w-12 h-12 rounded-lg bg-surface-2 overflow-hidden flex-shrink-0 relative border border-border">
+                        <div className="w-12 h-12 rounded-xl bg-surface-2 overflow-hidden flex-shrink-0 relative border border-border shadow-sm">
                           {imageUrl ? (
                             // eslint-disable-next-line @next/next/no-img-element
                             <img
@@ -217,7 +218,7 @@ export default async function AccountPage({
 
                         {/* Product Details */}
                         <div className="flex-1 min-w-0">
-                          <p className="font-space text-xs font-medium text-foreground truncate">
+                          <p className="font-space text-xs font-semibold text-foreground truncate">
                             {product?.name || "Unknown Product"}
                           </p>
                           {variant && (variant.size || variant.color) && (
@@ -232,7 +233,7 @@ export default async function AccountPage({
 
                         {/* Item Total Price */}
                         <div className="text-right shrink-0">
-                          <p className="font-space text-xs font-medium text-foreground">
+                          <p className="font-space text-xs font-bold text-foreground">
                             Rs. {Number(item.unit_price * item.quantity).toLocaleString("en-NP")}
                           </p>
                           {item.quantity > 1 && (
@@ -249,8 +250,8 @@ export default async function AccountPage({
                 {/* Optional Custom Request field */}
                 {order.custom_request && (
                   <div className="mt-4 pt-3 border-t border-dashed border-border">
-                    <p className="text-[11px] text-muted">
-                      <span className="font-medium text-foreground">Notes/Customization:</span> {order.custom_request}
+                    <p className="text-[11px] text-muted leading-relaxed">
+                      <span className="font-semibold text-foreground">Notes/Customization:</span> {order.custom_request}
                     </p>
                   </div>
                 )}

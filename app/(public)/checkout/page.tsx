@@ -175,13 +175,13 @@ export default function CheckoutPage() {
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 py-12">
       <div className="mb-8">
-        <Link href="/shop" className="font-inter text-xs text-muted hover:text-foreground transition-colors flex items-center gap-1.5">
+        <Link href="/shop" className="font-inter text-xs text-muted hover:text-foreground transition-all duration-200 flex items-center gap-1.5 active:scale-[0.98]">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
           Back to shop
         </Link>
       </div>
 
-      <h1 className="font-space text-2xl font-bold text-foreground tracking-tight mb-8">
+      <h1 className="font-space text-2xl md:text-3xl font-bold text-foreground tracking-tight mb-8">
         Checkout
       </h1>
 
@@ -189,46 +189,46 @@ export default function CheckoutPage() {
 
         {/* ── Left: Shipping form ── */}
         <form onSubmit={handleSubmit} className="space-y-6">
-          <section className="bg-surface border border-border rounded-xl p-6">
-            <h2 className="font-space text-sm font-semibold text-foreground uppercase tracking-widest mb-5">
+          <section className="bg-surface border border-border rounded-2xl p-6 shadow-[0_4px_20px_rgba(0,0,0,0.01)]">
+            <h2 className="font-space text-xs font-semibold text-foreground uppercase tracking-widest mb-6">
               Delivery details
             </h2>
-            <div className="space-y-4">
+            <div className="space-y-4.5">
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs text-muted mb-1.5">Full name</label>
+                  <label className="block text-xs text-muted mb-1.5 font-medium">Full name</label>
                   <input
                     type="text"
                     value={form.name}
                     onChange={e => update('name', e.target.value)}
                     required
                     placeholder="Shiba Sharma"
-                    className="w-full border border-border rounded-lg px-3 py-2.5 text-sm text-foreground bg-surface-2 focus:outline-none focus:border-foreground placeholder:text-muted/50 transition-colors"
+                    className="w-full border border-border rounded-xl px-3.5 py-2.5 text-sm text-foreground bg-surface-2 focus:outline-none focus:border-foreground focus:bg-surface focus:ring-1 focus:ring-foreground/10 placeholder:text-muted/40 transition-all duration-200"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs text-muted mb-1.5">Phone number</label>
+                  <label className="block text-xs text-muted mb-1.5 font-medium">Phone number</label>
                   <input
                     type="tel"
                     value={form.phone}
                     onChange={e => update('phone', e.target.value)}
                     required
                     placeholder="98XXXXXXXX"
-                    className="w-full border border-border rounded-lg px-3 py-2.5 text-sm text-foreground bg-surface-2 focus:outline-none focus:border-foreground placeholder:text-muted/50 transition-colors"
+                    className="w-full border border-border rounded-xl px-3.5 py-2.5 text-sm text-foreground bg-surface-2 focus:outline-none focus:border-foreground focus:bg-surface focus:ring-1 focus:ring-foreground/10 placeholder:text-muted/40 transition-all duration-200"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs text-muted mb-1.5">Street address</label>
+                <label className="block text-xs text-muted mb-1.5 font-medium">Street address</label>
                 <input
                   type="text"
                   value={form.address}
                   onChange={e => update('address', e.target.value)}
                   required
                   placeholder="Thamel, Ward 26"
-                  className="w-full border border-border rounded-lg px-3 py-2.5 text-sm text-foreground bg-surface-2 focus:outline-none focus:border-foreground placeholder:text-muted/50 transition-colors"
+                  className="w-full border border-border rounded-xl px-3.5 py-2.5 text-sm text-foreground bg-surface-2 focus:outline-none focus:border-foreground placeholder:text-muted/50 transition-colors"
                 />
               </div>
 
@@ -240,44 +240,44 @@ export default function CheckoutPage() {
                   onChange={e => update('city', e.target.value)}
                   required
                   placeholder="Kathmandu"
-                  className="w-full border border-border rounded-lg px-3 py-2.5 text-sm text-foreground bg-surface-2 focus:outline-none focus:border-foreground placeholder:text-muted/50 transition-colors"
+                  className="w-full border border-border rounded-xl px-3.5 py-2.5 text-sm text-foreground bg-surface-2 focus:outline-none focus:border-foreground focus:bg-surface focus:ring-1 focus:ring-foreground/10 placeholder:text-muted/40 transition-all duration-200"
                 />
               </div>
 
               <div>
-                <label className="block text-xs text-muted mb-1.5">
+                <label className="block text-xs text-muted mb-1.5 font-medium">
                   Delivery notes{' '}
-                  <span className="text-muted/60">(optional)</span>
+                  <span className="text-muted/60 font-normal">(optional)</span>
                 </label>
                 <textarea
                   value={form.notes}
                   onChange={e => update('notes', e.target.value)}
                   rows={3}
                   placeholder="Any special instructions, landmarks, or customization notes..."
-                  className="w-full border border-border rounded-lg px-3 py-2.5 text-sm text-foreground bg-surface-2 focus:outline-none focus:border-foreground placeholder:text-muted/50 transition-colors resize-none"
+                  className="w-full border border-border rounded-xl px-3.5 py-2.5 text-sm text-foreground bg-surface-2 focus:outline-none focus:border-foreground focus:bg-surface focus:ring-1 focus:ring-foreground/10 placeholder:text-muted/40 transition-all duration-200 resize-none"
                 />
               </div>
             </div>
           </section>
 
           {/* Payment method */}
-          <section className="bg-surface border border-border rounded-xl p-6">
-            <h2 className="font-space text-sm font-semibold text-foreground uppercase tracking-widest mb-4">
+          <section className="bg-surface border border-border rounded-2xl p-6 shadow-[0_4px_20px_rgba(0,0,0,0.01)]">
+            <h2 className="font-space text-xs font-semibold text-foreground uppercase tracking-widest mb-5">
               Payment
             </h2>
-            <div className="flex items-center gap-3 p-3 border border-foreground rounded-lg bg-surface-2">
+            <div className="flex items-center gap-3.5 p-4 border border-foreground rounded-xl bg-surface-2 cursor-pointer active:scale-[0.99] transition-transform duration-150">
               <div className="w-4 h-4 rounded-full border-2 border-foreground flex items-center justify-center shrink-0">
                 <div className="w-2 h-2 rounded-full bg-foreground" />
               </div>
-              <div>
-                <p className="font-space text-sm font-medium text-foreground">Cash on delivery</p>
+              <div className="space-y-0.5">
+                <p className="font-space text-sm font-semibold text-foreground">Cash on delivery</p>
                 <p className="font-inter text-xs text-muted">Pay when your order arrives</p>
               </div>
             </div>
           </section>
 
           {error && (
-            <p className="text-xs text-red-500 bg-red-50 border border-red-100 rounded-lg px-4 py-3">
+            <p className="text-xs text-red-500 bg-red-50 dark:bg-red-500/10 border border-red-100 dark:border-red-500/20 rounded-xl px-4 py-3">
               {error}
             </p>
           )}
@@ -285,7 +285,7 @@ export default function CheckoutPage() {
           <button
             type="submit"
             disabled={placing || items.length === 0}
-            className="w-full py-3.5 bg-foreground text-background font-space text-sm font-semibold rounded-xl hover:opacity-90 active:scale-[0.99] disabled:opacity-50 transition-all"
+            className="w-full py-4 bg-foreground text-background font-space text-sm font-semibold rounded-xl hover:opacity-90 active:scale-[0.98] transition-all shadow-md shadow-foreground/5 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {placing
               ? 'Placing order…'
@@ -296,15 +296,15 @@ export default function CheckoutPage() {
         </form>
 
         {/* ── Right: Order summary ── */}
-        <aside className="bg-surface border border-border rounded-xl p-6 lg:sticky lg:top-20">
-          <h2 className="font-space text-sm font-semibold text-foreground uppercase tracking-widest mb-5">
+        <aside className="bg-surface border border-border rounded-2xl p-6 lg:sticky lg:top-20 shadow-[0_4px_20px_rgba(0,0,0,0.01)]">
+          <h2 className="font-space text-xs font-semibold text-foreground uppercase tracking-widest mb-6">
             Order summary
           </h2>
 
-          <ul className="space-y-4 mb-5">
+          <ul className="space-y-4 mb-6">
             {items.map(item => (
               <li key={item._key} className="flex gap-3">
-                <div className="w-14 h-14 rounded-xl bg-surface-2 overflow-hidden flex-shrink-0 relative border border-border">
+                <div className="w-14 h-14 rounded-xl bg-surface-2 overflow-hidden flex-shrink-0 relative border border-border shadow-sm">
                   {isValidUrl(item.productImage) ? (
                     <Image
                       src={item.productImage!}
@@ -316,45 +316,45 @@ export default function CheckoutPage() {
                   ) : null}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="font-space text-sm font-semibold text-foreground truncate">
+                  <p className="font-space text-xs font-semibold text-foreground truncate">
                     {item.productName}
                   </p>
                   {(item.variant?.size || item.variant?.color) && (
-                    <p className="font-inter text-xs text-muted mt-0.5">
+                    <p className="font-inter text-[11px] text-muted mt-0.5">
                       {[item.variant.size, item.variant.color].filter(Boolean).join(' · ')}
                     </p>
                   )}
-                  <p className="font-inter text-xs text-muted mt-0.5">
+                  <p className="font-inter text-[11px] text-muted mt-0.5">
                     Qty: {item.quantity}
                   </p>
                 </div>
-                <p className="font-space text-sm font-medium text-foreground shrink-0">
+                <p className="font-space text-xs font-bold text-foreground shrink-0">
                   Rs. {(item.unitPrice * item.quantity).toLocaleString('en-NP')}
                 </p>
               </li>
             ))}
           </ul>
 
-          <div className="border-t border-border pt-4 space-y-2">
-            <div className="flex justify-between text-sm">
+          <div className="border-t border-border pt-5 space-y-2.5">
+            <div className="flex justify-between text-xs">
               <span className="text-muted">Subtotal</span>
-              <span className="text-foreground font-medium">
+              <span className="text-foreground font-semibold">
                 Rs. {subtotal.toLocaleString('en-NP')}
               </span>
             </div>
-            <div className="flex justify-between text-sm">
+            <div className="flex justify-between text-xs">
               <span className="text-muted">Delivery</span>
               <span className="text-muted">To be confirmed</span>
             </div>
-            <div className="border-t border-border pt-2 flex justify-between">
-              <span className="font-space text-sm font-semibold text-foreground">Total</span>
-              <span className="font-space text-sm font-semibold text-foreground">
+            <div className="border-t border-border pt-3 flex justify-between items-center">
+              <span className="font-space text-sm font-bold text-foreground">Total</span>
+              <span className="font-space text-sm font-bold text-foreground">
                 Rs. {subtotal.toLocaleString('en-NP')}
               </span>
             </div>
           </div>
 
-          <p className="font-inter text-[11px] text-muted mt-4 leading-relaxed">
+          <p className="font-inter text-[10px] text-muted mt-5 leading-relaxed text-center sm:text-left border-t border-border/50 pt-3">
             By placing your order you agree to pay cash upon delivery. We'll contact you to confirm.
           </p>
         </aside>
