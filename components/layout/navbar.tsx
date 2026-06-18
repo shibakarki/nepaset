@@ -17,6 +17,7 @@ export function Navbar() {
   const [theme, setTheme] = useState<'light' | 'dark'>('light')
   const [isFloating, setIsFloating] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
+  const [isFocused, setIsFocused] = useState(false) // Track search input focus
   const { openCart, totalItems } = useCart()
   const itemCount = totalItems()
 
@@ -50,6 +51,7 @@ export function Navbar() {
         setIsFloating(true)
       } else {
         setIsFloating(false)
+        setIsFocused(false) // Ensure focus state resets if scrolled back to top
       }
     }
     window.addEventListener('scroll', handleScroll, { passive: true })
@@ -84,6 +86,7 @@ export function Navbar() {
     if (searchQuery.trim()) {
       router.push(`/shop?search=${encodeURIComponent(searchQuery.trim())}`)
       setMobileOpen(false)
+      setIsFocused(false)
     }
   }
 
@@ -107,6 +110,37 @@ export function Navbar() {
     <>
       <CartDrawer />
 
+      {/* --- Global High-Fidelity Custom Styles --- */}
+      <style>{`
+        /* --- Micro-Reflective Liquid Glass effect --- */
+        .liquid-glass {
+          background: rgba(255, 255, 255, 0.45) !important;
+          backdrop-filter: blur(20px) saturate(190%) !important;
+          -webkit-backdrop-filter: blur(20px) saturate(190%) !important;
+          border: 1.5px solid rgba(255, 255, 255, 0.5) !important;
+          box-shadow: 
+            0 8px 32px 0 rgba(0, 0, 0, 0.04),
+            inset 0 1px 1px 0 rgba(255, 255, 255, 0.5),
+            inset 0 -1px 1px 0 rgba(0, 0, 0, 0.02) !important;
+        }
+        
+        .dark .liquid-glass {
+          background: rgba(23, 23, 23, 0.5) !important;
+          backdrop-filter: blur(20px) saturate(140%) !important;
+          -webkit-backdrop-filter: blur(20px) saturate(140%) !important;
+          border: 1.5px solid rgba(255, 255, 255, 0.08) !important;
+          box-shadow: 
+            0 12px 40px 0 rgba(0, 0, 0, 0.45),
+            inset 0 1px 0px 0 rgba(255, 255, 255, 0.1),
+            inset 0 -1px 0px 0 rgba(0, 0, 0, 0.25) !important;
+        }
+
+        /* --- Custom elastic bounciness for Dynamic Island --- */
+        .spring-ease {
+          transition-timing-function: cubic-bezier(0.34, 1.75, 0.5, 1) !important;
+        }
+      `}</style>
+
       {/* --- 1. STICKY HEADER (Slides out when scrolling down) --- */}
       <header className={`sticky top-0 z-40 transition-transform duration-500 ease-[cubic-bezier(0.25,1,0.5,1)] ${
         isFloating ? '-translate-y-full' : 'translate-y-0'
@@ -116,25 +150,28 @@ export function Navbar() {
           {/* Logo */}
           <Link
             href="/"
-            className="flex items-center gap-0.5 font-space text-lg font-bold tracking-tight text-foreground shrink-0 z-10"
+            className="flex items-center gap-0.5 font-space text-lg font-bold tracking-tight text-foreground shrink-0 z-10 hover:opacity-85 transition-opacity"
           >
             NEPASET
             <span className="inline-block w-1.5 h-1.5 bg-foreground rounded-full mb-0.5 ml-0.5" />
           </Link>
 
-          {/* Desktop Nav Links (Perfectly Centered on Desktop) */}
-          <nav className="hidden md:flex items-center gap-7 shrink-0">
+          {/* Desktop Nav Links (Centering naturally, with center-expansion underline) */}
+          <nav className="hidden md:flex items-center gap-8 shrink-0">
             {links.map(l => (
               <Link
                 key={l.href}
                 href={l.href}
-                className={`font-inter text-sm transition-colors ${
+                className={`relative group py-1.5 font-inter text-sm transition-colors duration-200 ${
                   isActive(l.href)
                     ? 'text-foreground font-semibold'
                     : 'text-muted hover:text-foreground'
                 }`}
               >
                 {l.label}
+                <span className={`absolute bottom-0 left-0 w-full h-[1.5px] bg-foreground transition-transform duration-300 origin-center rounded-full ${
+                  isActive(l.href) ? 'scale-x-100' : 'scale-x-0 group-hover:scale-x-100'
+                }`} />
               </Link>
             ))}
           </nav>
@@ -142,11 +179,11 @@ export function Navbar() {
           {/* Header Controls */}
           <div className="flex items-center gap-0.5 z-10">
 
-            {/* INTEGRATED DESKTOP SEARCH BAR (Repositioned to the Left of the Cart) */}
+            {/* INTEGRATED DESKTOP SEARCH BAR (Liquid Glass Sheen, left of Cart) */}
             {!isFloating && (
               <form 
                 onSubmit={handleSearchSubmit}
-                className="hidden md:flex items-center gap-2 h-9 w-[180px] lg:w-[240px] px-3.5 rounded-xl border border-white/50 dark:border-neutral-800/50 bg-white/30 dark:bg-neutral-900/30 backdrop-blur-md mr-2.5 transition-all duration-300 shadow-[0_8px_32px_0_rgba(0,0,0,0.02)]"
+                className="hidden md:flex items-center gap-2 h-9 w-[180px] lg:w-[240px] px-3.5 rounded-xl transition-all duration-300 liquid-glass hover:bg-white/55 dark:hover:bg-neutral-900/55"
               >
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-muted shrink-0">
                   <circle cx="11" cy="11" r="8" />
@@ -157,7 +194,7 @@ export function Navbar() {
                   placeholder="Search NEPASET..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="bg-transparent border-none outline-none text-xs text-foreground placeholder:text-muted/60 w-full"
+                  className="bg-transparent border-none outline-none text-xs text-foreground placeholder:text-muted/60 w-full focus:ring-0"
                 />
                 {searchQuery && (
                   <button 
@@ -189,7 +226,7 @@ export function Navbar() {
               )}
             </button>
 
-            {/* Account (Hidden on Mobile Header, present in Drawer instead to save space) */}
+            {/* Account */}
             <Link
               href={user ? '/account' : '/auth/login'}
               className="hidden sm:flex w-10 h-10 items-center justify-center rounded-md hover:bg-surface-2 transition-colors text-foreground"
@@ -208,7 +245,7 @@ export function Navbar() {
               )}
             </Link>
 
-            {/* Theme toggle (Hidden on Mobile Header, present in Drawer instead) */}
+            {/* Theme toggle */}
             <button
               type="button"
               onClick={toggleTheme}
@@ -248,21 +285,24 @@ export function Navbar() {
         </div>
       </header>
 
-      {/* --- 2. THE FLOATING / MOBILE INTEGRATED SEARCH BAR (With Liquid Glass sheen) --- */}
+      {/* --- 2. THE FLOATING / MOBILE INTEGRATED SEARCH BAR (Dynamic Island Morphing with Focus Expansion) --- */}
       <div className={`pointer-events-none fixed left-1/2 -translate-x-1/2 w-full max-w-6xl px-4 z-45 transition-all duration-500 ${
-        isFloating ? 'top-2.5' : 'top-3 md:hidden' // Hidden on desktop when not floating (md:hidden)
+        isFloating ? 'top-2.5' : 'top-3 md:hidden'
       }`}>
         <div className="relative w-full h-8 flex items-center justify-center">
           <form 
             onSubmit={handleSearchSubmit}
-            className={`pointer-events-auto font-space text-xs px-4 py-3 border border-border bg-surface-2 rounded-xl text-foreground font-semibold hover:bg-surface active:scale-[0.98] transition-all flex items-center justify-between ${
+            onFocus={() => setIsFloating(true)} // Retain floating style if interacted with
+            className={`pointer-events-auto transition-all duration-500 spring-ease liquid-glass ${
               isFloating 
-                ? 'w-[200px] sm:w-[280px] h-9 rounded-full border border-white/50 dark:border-neutral-800/50 bg-white/40 dark:bg-neutral-900/40 backdrop-blur-md shadow-[0_8px_32px_rgba(0,0,0,0.12)] flex items-center gap-2'
-                : 'w-[130px] sm:w-[180px] h-8 rounded-lg border border-white/50 dark:border-neutral-800/50 bg-white/40 dark:bg-neutral-900/40 backdrop-blur-md flex items-center gap-2'
+                ? isFocused
+                  ? 'w-[260px] sm:w-[350px] h-9.5 rounded-full px-4.5 flex items-center gap-2 border-white/60 dark:border-neutral-700/60 shadow-[0_12px_40px_rgba(0,0,0,0.18)]' // Expands on Focus!
+                  : 'w-[190px] sm:w-[270px] h-9 rounded-full px-4 flex items-center gap-2' // Compact default floating
+                : 'w-[130px] sm:w-[180px] h-8 rounded-lg px-3 flex items-center gap-2' // Non-floating mobile centered
             }`}
           >
             {/* Search Icon */}
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-muted shrink-0">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-muted shrink-0 transition-transform duration-300 group-hover:scale-105">
               <circle cx="11" cy="11" r="8" />
               <path d="M21 21l-4.3-4.3" />
             </svg>
@@ -273,7 +313,9 @@ export function Navbar() {
               placeholder={isFloating ? "Search..." : "Search NEPASET..."}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="bg-transparent border-none outline-none text-xs text-foreground placeholder:text-muted/60 w-full h-full focus:ring-0"
+              onFocus={() => setIsFocused(true)}
+              onBlur={() => setIsFocused(false)}
+              className="bg-transparent border-none outline-none text-xs text-foreground placeholder:text-muted/50 w-full h-full focus:ring-0"
             />
             
             {/* Clear query button */}
@@ -290,16 +332,17 @@ export function Navbar() {
         </div>
       </div>
 
-      {/* --- 3. MOBILE MENU DRAWER (Locked at absolute highest z-index z-[9999]) --- */}
+      {/* --- 3. FROSTED GLASS MOBILE MENU DRAWER (Locked at absolute highest z-index z-[9999]) --- */}
       {mobileOpen && (
-        <div className="md:hidden fixed inset-x-0 bottom-0 top-14 z-[9999] bg-black/40 dark:bg-black/70 backdrop-blur-sm">
-          <div className="bg-surface border-b border-border h-full max-h-[85vh] overflow-y-auto shadow-2xl flex flex-col justify-between">
+        <div className="md:hidden fixed inset-x-0 bottom-0 top-14 z-[9999] bg-black/45 dark:bg-black/75 backdrop-blur-md">
+          {/* Glassmorphic Drawer Body */}
+          <div className="bg-surface/80 dark:bg-neutral-900/80 backdrop-blur-xl border-b border-border h-full max-h-[85vh] overflow-y-auto shadow-2xl flex flex-col justify-between">
             
-            <div className="max-w-6xl mx-auto w-full px-4 py-5 space-y-6">
+            <div className="max-w-6xl mx-auto w-full px-5 py-6 space-y-6">
               
               {/* Account Card */}
               {user ? (
-                <div className="bg-surface-2 border border-border rounded-xl p-4 flex flex-col gap-3">
+                <div className="bg-surface-2/60 border border-border rounded-2xl p-4 flex flex-col gap-3">
                   <div>
                     <p className="font-inter text-[10px] tracking-wider uppercase text-muted font-bold">Logged In Account</p>
                     <p className="font-space text-sm font-semibold text-foreground truncate mt-0.5">
@@ -310,26 +353,26 @@ export function Navbar() {
                     <Link
                       href="/account"
                       onClick={() => setMobileOpen(false)}
-                      className="flex-1 text-center font-space text-xs font-semibold bg-surface border border-border text-foreground py-2 rounded-lg hover:bg-surface-2 transition-colors active:scale-[0.98]"
+                      className="flex-1 text-center font-space text-xs font-semibold bg-surface border border-border text-foreground py-2.5 rounded-xl hover:bg-surface-2 transition-colors active:scale-[0.98]"
                     >
                       My Account
                     </Link>
                     <button
                       onClick={handleSignOut}
-                      className="flex-1 text-center font-space text-xs font-semibold bg-red-500/10 text-red-500 border border-red-500/20 py-2 rounded-lg active:scale-[0.98] cursor-pointer"
+                      className="flex-1 text-center font-space text-xs font-semibold bg-red-500/10 text-red-500 border border-red-500/20 py-2.5 rounded-xl active:scale-[0.98] cursor-pointer"
                     >
                       Sign Out
                     </button>
                   </div>
                 </div>
               ) : (
-                <div className="bg-[#0a0a0a] dark:bg-neutral-900 border border-neutral-800 rounded-xl p-4 flex flex-col gap-2">
+                <div className="bg-[#0a0a0a] dark:bg-neutral-950 border border-neutral-800 rounded-2xl p-5 flex flex-col gap-2.5 shadow-lg">
                   <p className="font-space text-sm font-semibold text-white">Join the Community</p>
-                  <p className="font-inter text-xs text-neutral-400">Sign in to track orders, manage addresses, and save designs.</p>
+                  <p className="font-inter text-xs text-neutral-400 leading-relaxed">Sign in to track orders, manage addresses, and save custom designs.</p>
                   <Link
                     href="/auth/login"
                     onClick={() => setMobileOpen(false)}
-                    className="text-center font-space text-xs font-semibold bg-white text-[#0a0a0a] py-2.5 rounded-lg active:scale-[0.98] transition-transform mt-1"
+                    className="text-center font-space text-xs font-semibold bg-white text-[#0a0a0a] py-3 rounded-xl active:scale-[0.98] transition-transform mt-1"
                   >
                     Sign In / Register
                   </Link>
@@ -337,15 +380,15 @@ export function Navbar() {
               )}
 
               {/* Visual Categories Grid */}
-              <div className="space-y-3">
+              <div className="space-y-3.5">
                 <p className="font-space text-xs font-bold tracking-widest uppercase text-muted">Shop by Category</p>
-                <div className="grid grid-cols-2 gap-2">
+                <div className="grid grid-cols-2 gap-2.5">
                   {categories.map(cat => (
                     <Link
                       key={cat.href}
                       href={cat.href}
                       onClick={() => setMobileOpen(false)}
-                      className="font-space text-xs px-4 py-3 border border-border bg-surface-2 rounded-xl text-foreground font-semibold hover:bg-surface active:scale-[0.98] transition-all flex items-center justify-between"
+                      className="font-space text-xs px-4 py-3.5 border border-border bg-surface-2/40 hover:bg-surface rounded-2xl text-foreground font-semibold active:scale-[0.98] transition-all flex items-center justify-between"
                     >
                       {cat.label}
                       <span className="text-[10px] text-muted">→</span>
@@ -355,18 +398,18 @@ export function Navbar() {
               </div>
 
               {/* Navigation Links */}
-              <div className="space-y-2">
+              <div className="space-y-3">
                 <p className="font-space text-xs font-bold tracking-widest uppercase text-muted">Pages</p>
-                <nav className="flex flex-col gap-1.5">
+                <nav className="flex flex-col gap-2">
                   {links.map(l => (
                     <Link
                       key={l.href}
                       href={l.href}
                       onClick={() => setMobileOpen(false)}
-                      className={`font-inter text-sm px-4 py-3 rounded-xl transition-all ${
+                      className={`font-inter text-sm px-4.5 py-3.5 rounded-2xl transition-all border ${
                         isActive(l.href)
-                          ? 'text-foreground font-semibold bg-surface-2 border border-border/50'
-                          : 'text-muted hover:text-foreground hover:bg-surface-2 border border-transparent'
+                          ? 'text-foreground font-semibold bg-surface-2 border-border/70 shadow-sm'
+                          : 'text-muted hover:text-foreground hover:bg-surface-2 border-transparent'
                       }`}
                     >
                       {l.label}
@@ -376,14 +419,14 @@ export function Navbar() {
               </div>
 
               {/* Social Links */}
-              <div className="space-y-3 pt-2 border-t border-border">
+              <div className="space-y-4 pt-4 border-t border-border">
                 <p className="font-space text-xs font-bold tracking-widest uppercase text-muted text-center">Follow & Connect</p>
-                <div className="flex items-center justify-center gap-3">
+                <div className="flex items-center justify-center gap-4">
                   <a
                     href="https://www.instagram.com/nepaset/?utm_source=ig_web_button_share_sheet"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="w-10 h-10 border border-border bg-surface rounded-xl flex items-center justify-center text-foreground active:scale-[0.95]"
+                    className="w-11 h-11 border border-border bg-surface/50 rounded-2xl flex items-center justify-center text-foreground active:scale-[0.95] hover:bg-surface hover:text-foreground transition-all"
                     aria-label="Instagram"
                   >
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
@@ -396,7 +439,7 @@ export function Navbar() {
                     href="https://www.facebook.com/share/18gks8VFnH/"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="w-10 h-10 border border-border bg-surface rounded-xl flex items-center justify-center text-foreground active:scale-[0.95]"
+                    className="w-11 h-11 border border-border bg-surface/50 rounded-2xl flex items-center justify-center text-foreground active:scale-[0.95] hover:bg-surface hover:text-foreground transition-all"
                     aria-label="Facebook"
                   >
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
@@ -407,7 +450,7 @@ export function Navbar() {
                     href="https://www.tiktok.com/@nepaset?is_from_webapp=1&sender_device=pc"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="w-10 h-10 border border-border bg-surface rounded-xl flex items-center justify-center text-foreground active:scale-[0.95]"
+                    className="w-11 h-11 border border-border bg-surface/50 rounded-2xl flex items-center justify-center text-foreground active:scale-[0.95] hover:bg-surface hover:text-foreground transition-all"
                     aria-label="TikTok"
                   >
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
@@ -419,8 +462,8 @@ export function Navbar() {
 
             </div>
             
-            <div className="bg-surface-2 border-t border-border px-4 py-3 text-center">
-              <p className="font-inter text-[10px] text-muted">
+            <div className="bg-surface-2/80 border-t border-border px-4 py-3.5 text-center">
+              <p className="font-inter text-[10px] text-muted font-medium">
                 © {new Date().getFullYear()} NEPASET • Kathmandu, Nepal
               </p>
             </div>
