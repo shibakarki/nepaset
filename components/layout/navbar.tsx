@@ -44,7 +44,16 @@ export function Navbar() {
     localStorage.setItem('theme', theme)
   }, [mounted, theme])
 
-  // 2. Scroll Listener for "Dynamic Island" Morphing Search Bar
+  // 2. Sync Search Input with URL Search Parameters (Auto-fills or Auto-clears input)
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search)
+      const activeSearch = params.get('search')
+      setSearchQuery(activeSearch || '')
+    }
+  }, [pathname])
+
+  // 3. Scroll Listener for "Dynamic Island" Morphing Search Bar
   useEffect(() => {
     const handleScroll = () => {
       if (window.scrollY > 60) {
@@ -58,7 +67,7 @@ export function Navbar() {
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
-  // 3. Scroll lock when mobile drawer is open
+  // 4. Scroll lock when mobile drawer is open
   useEffect(() => {
     if (mobileOpen) {
       document.body.style.overflow = 'hidden'
@@ -81,13 +90,24 @@ export function Navbar() {
     router.push('/')
   }
 
+  // 5. Unified Search Submit (Handles non-empty and empty redirections)
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     if (searchQuery.trim()) {
       router.push(`/shop?search=${encodeURIComponent(searchQuery.trim())}`)
-      setMobileOpen(false)
-      setIsFocused(false)
+    } else {
+      router.push('/shop') // Redirect to base shop if nothing is typed
     }
+    setMobileOpen(false)
+    setIsFocused(false)
+  }
+
+  // 6. Direct Clear Button Handler
+  const handleClearSearch = () => {
+    setSearchQuery('')
+    router.push('/shop') // Instantly redirect back to clean shop page
+    setMobileOpen(false)
+    setIsFocused(false)
   }
 
   const links = [
@@ -141,7 +161,7 @@ export function Navbar() {
         }
       `}</style>
 
-      {/* --- 1. STICKY HEADER (Slides out when scrolling down) --- */}
+      {/* --- 1. STICKY HEADER --- */}
       <header className={`sticky top-0 z-40 transition-transform duration-500 ease-[cubic-bezier(0.25,1,0.5,1)] ${
         isFloating ? '-translate-y-full' : 'translate-y-0'
       } bg-surface/95 border-b border-border backdrop-blur-sm h-14`}>
@@ -156,8 +176,8 @@ export function Navbar() {
             <span className="inline-block w-1.5 h-1.5 bg-foreground rounded-full mb-0.5 ml-0.5" />
           </Link>
 
-          {/* Desktop Nav Links (Centering naturally, with center-expansion underline) */}
-          <nav className="hidden md:flex items-center gap-8 shrink-0">
+          {/* Desktop Nav Links */}
+          <nav className="hidden md:flex items-center gap-7 shrink-0">
             {links.map(l => (
               <Link
                 key={l.href}
@@ -179,7 +199,7 @@ export function Navbar() {
           {/* Header Controls */}
           <div className="flex items-center gap-0.5 z-10">
 
-            {/* INTEGRATED DESKTOP SEARCH BAR (Smoothly morphs, scales, and collapses on scroll) */}
+            {/* INTEGRATED DESKTOP SEARCH BAR */}
             <form 
               onSubmit={handleSearchSubmit}
               className={`hidden md:flex items-center gap-2 h-9 px-3.5 rounded-xl border border-white/50 dark:border-neutral-800/50 bg-white/30 dark:bg-neutral-900/30 backdrop-blur-md transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] shadow-[0_8px_32px_0_rgba(0,0,0,0.02)] origin-right ${
@@ -202,7 +222,7 @@ export function Navbar() {
               {searchQuery && (
                 <button 
                   type="button" 
-                  onClick={() => setSearchQuery('')}
+                  onClick={handleClearSearch} // Instantly clears and redirects to /shop
                   className="text-muted hover:text-foreground text-xs font-semibold cursor-pointer"
                 >
                   ✕
@@ -247,7 +267,7 @@ export function Navbar() {
               )}
             </Link>
 
-            {/* Theme toggle (Permanently visible on all screens, including phones!) */}
+            {/* Theme toggle */}
             <button
               type="button"
               onClick={toggleTheme}
@@ -287,7 +307,7 @@ export function Navbar() {
         </div>
       </header>
 
-      {/* --- 2. THE FLOATING / MOBILE INTEGRATED SEARCH BAR (Dynamic Island Morphing with Focus Expansion) --- */}
+      {/* --- 2. THE FLOATING / MOBILE INTEGRATED SEARCH BAR --- */}
       <div className={`pointer-events-none fixed left-1/2 -translate-x-1/2 w-full max-w-6xl px-4 z-45 transition-all duration-500 ${
         isFloating ? 'top-2.5' : 'top-3 md:hidden'
       }`}>
@@ -324,7 +344,7 @@ export function Navbar() {
             {searchQuery && (
               <button 
                 type="button" 
-                onClick={() => setSearchQuery('')}
+                onClick={handleClearSearch} // Instantly clears and redirects to /shop
                 className="text-muted hover:text-foreground text-xs font-semibold cursor-pointer"
               >
                 ✕
@@ -334,7 +354,7 @@ export function Navbar() {
         </div>
       </div>
 
-      {/* --- 3. FROSTED GLASS MOBILE MENU DRAWER (Locked at absolute highest z-index z-[9999]) --- */}
+      {/* --- 3. MOBILE MENU DRAWER (Locked at absolute highest z-index z-[9999]) --- */}
       {mobileOpen && (
         <div className="md:hidden fixed inset-x-0 bottom-0 top-14 z-[9999] bg-black/45 dark:bg-black/75 backdrop-blur-md">
           {/* Glassmorphic Drawer Body */}
@@ -420,7 +440,7 @@ export function Navbar() {
                 </nav>
               </div>
 
-              {/* Mobile Drawer Dedicated Theme Selector Row (Highly Accessible!) */}
+              {/* Mobile Drawer Theme Selector Row */}
               <div className="space-y-3">
                 <p className="font-space text-xs font-bold tracking-widest uppercase text-muted">Display Preference</p>
                 <div className="bg-surface-2/40 border border-border rounded-2xl p-4 flex items-center justify-between shadow-inner">
