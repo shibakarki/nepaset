@@ -191,14 +191,14 @@ export function Navbar() {
           </div>
         </div>
 
-        {/* RE-DESIGNED MOBILE DRAWER (Highly Functional Mobile Command Center) */}
+        {/* FIXED: Increased z-index to z-50 and added compatible backdrops */}
         {mobileOpen && (
-          <div className="md:hidden fixed inset-x-0 bottom-0 top-14 z-35 bg-background/80 backdrop-blur-md">
+          <div className="md:hidden fixed inset-x-0 bottom-0 top-14 z-50 bg-black/40 dark:bg-black/70 backdrop-blur-sm">
             <div className="bg-surface border-b border-border h-full max-h-[85vh] overflow-y-auto shadow-2xl flex flex-col justify-between">
               
               <div className="max-w-6xl mx-auto w-full px-4 py-5 space-y-6">
                 
-                {/* 1. Welcoming User Status Section */}
+                {/* 1. Account Card */}
                 {user ? (
                   <div className="bg-surface-2 border border-border rounded-xl p-4 flex flex-col gap-3">
                     <div>
@@ -237,7 +237,7 @@ export function Navbar() {
                   </div>
                 )}
 
-                {/* 2. Visual "Shop by Category" Grid */}
+                {/* 2. Visual Categories Grid */}
                 <div className="space-y-3">
                   <p className="font-space text-xs font-bold tracking-widest uppercase text-muted">Shop by Category</p>
                   <div className="grid grid-cols-2 gap-2">
@@ -255,7 +255,7 @@ export function Navbar() {
                   </div>
                 </div>
 
-                {/* 3. Core Pages Navigation Links */}
+                {/* 3. Navigation Links */}
                 <div className="space-y-2">
                   <p className="font-space text-xs font-bold tracking-widest uppercase text-muted">Pages</p>
                   <nav className="flex flex-col gap-1.5">
@@ -276,7 +276,7 @@ export function Navbar() {
                   </nav>
                 </div>
 
-                {/* 4. Social Links & Quick Support Access */}
+                {/* 4. Social Links */}
                 <div className="space-y-3 pt-2 border-t border-border">
                   <p className="font-space text-xs font-bold tracking-widest uppercase text-muted text-center">Follow & Connect</p>
                   <div className="flex items-center justify-center gap-3">
@@ -320,7 +320,6 @@ export function Navbar() {
 
               </div>
               
-              {/* Bottom Copyright watermark inside drawer */}
               <div className="bg-surface-2 border-t border-border px-4 py-3 text-center">
                 <p className="font-inter text-[10px] text-muted">
                   © {new Date().getFullYear()} NEPASET • Kathmandu, Nepal
