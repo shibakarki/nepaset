@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { createClient } from "@/lib/supabase/client";
+import { createClient } from "@/lib/supabase/server"; // FIXED: Changed back to server client
 import { ORDER_STATUS_COLORS, ORDER_STATUS_LABELS, type OrderStatus } from "@/types/admin";
 import { SignOutButton } from "@/components/account/SignOutButton";
 import { OrderSuccessToast } from "@/components/account/OrderSuccessToast";
