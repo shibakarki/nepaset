@@ -21,7 +21,8 @@ function resolveCategories(filter: string | undefined): ProductCategory[] | null
 
 async function getProducts(
   categoryFilter: string | undefined,
-  sort: string | undefined
+  sort: string | undefined,
+  searchFilter: string | undefined // ADDED: Search Query Filter
 ): Promise<Product[]> {
   const supabase = await createClient();
 
@@ -29,9 +30,15 @@ async function getProducts(
     .from("products")
     .select("id, name, slug, category, base_price, images, tags, is_customizable, is_new, created_at");
 
+  // Category Filtering
   const categories = resolveCategories(categoryFilter);
   if (categories) {
     query = query.in("category", categories);
+  }
+
+  // SEARCH FILTERING (Case-insensitive partial match on name)
+  if (searchFilter && searchFilter.trim() !== "") {
+    query = query.ilike("name", `%${searchFilter.trim()}%`);
   }
 
   // Sorting
@@ -60,6 +67,7 @@ async function getProducts(
 type SearchParams = {
   category?: string;
   sort?: string;
+  search?: string; // ADDED: search key to parameters
 };
 
 export default async function ShopPage({
@@ -67,10 +75,13 @@ export default async function ShopPage({
 }: {
   searchParams: Promise<SearchParams>;
 }) {
-  const { category, sort } = await searchParams;
-  const products = await getProducts(category, sort);
+  const { category, sort, search } = await searchParams; // Grab search
+  const products = await getProducts(category, sort, search); // Pass search
 
-  const pageTitle = !category || category === "all"
+  // Dynamic header title based on active search or active category
+  const pageTitle = search
+    ? `Search: "${search}"`
+    : !category || category === "all"
     ? "Shop"
     : category === "apparel"
     ? "Apparel"
@@ -88,10 +99,10 @@ export default async function ShopPage({
     <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
       {/* Page header */}
       <div className="mb-8">
-        <h1 className="font-space text-3xl font-medium tracking-tight text-[#0a0a0a] mb-1">
+        <h1 className="font-space text-3xl font-bold tracking-tight text-foreground mb-1">
           {pageTitle}
         </h1>
-        <p className="text-sm text-neutral-400">
+        <p className="text-sm text-muted">
           Customized for you, made in Nepal
         </p>
       </div>
@@ -102,9 +113,9 @@ export default async function ShopPage({
       </Suspense>
 
       {/* Results meta */}
-      <p className="text-xs text-neutral-400 mb-5">
+      <p className="text-xs text-muted mb-5">
         {products.length} {products.length === 1 ? "product" : "products"}
-        {category && category !== "all" ? ` in ${pageTitle}` : ""}
+        {category && category !== "all" && !search ? ` in ${pageTitle}` : ""}
       </p>
 
       {/* Grid */}
@@ -115,7 +126,7 @@ export default async function ShopPage({
           ))}
         </div>
       ) : (
-        <EmptyState category={pageTitle} />
+        <EmptyState category={pageTitle} isSearch={!!search} />
       )}
     </main>
   );
@@ -129,17 +140,17 @@ function FiltersSkeleton() {
       {Array.from({ length: 5 }).map((_, i) => (
         <div
           key={i}
-          className="h-8 w-20 rounded-full bg-neutral-100 animate-pulse"
+          className="h-8 w-20 rounded-full bg-surface-2 animate-pulse"
         />
       ))}
     </div>
   );
 }
 
-function EmptyState({ category }: { category: string }) {
+function EmptyState({ category, isSearch }: { category: string; isSearch?: boolean }) {
   return (
     <div className="flex flex-col items-center justify-center py-24 text-center">
-      <div className="w-12 h-12 rounded-full bg-neutral-100 flex items-center justify-center mb-4">
+      <div className="w-12 h-12 rounded-full bg-surface-2 flex items-center justify-center mb-4 border border-border/40">
         <svg
           width="20"
           height="20"
@@ -149,17 +160,19 @@ function EmptyState({ category }: { category: string }) {
           strokeWidth="1.5"
           strokeLinecap="round"
           strokeLinejoin="round"
-          className="text-neutral-400"
+          className="text-muted"
         >
           <circle cx="11" cy="11" r="8" />
           <path d="m21 21-4.35-4.35" />
         </svg>
       </div>
-      <p className="text-sm font-medium text-[#0a0a0a] mb-1">
+      <h2 className="font-space text-sm font-semibold text-foreground mb-1">
         No products found
-      </p>
-      <p className="text-xs text-neutral-400">
-        Nothing in {category} yet — check back soon.
+      </h2>
+      <p className="text-xs text-muted max-w-xs leading-relaxed">
+        {isSearch
+          ? "We couldn't find anything matching your search. Try checking your spelling or using different keywords."
+          : `Nothing in ${category} yet — check back soon.`}
       </p>
     </div>
   );
@@ -172,8 +185,11 @@ export async function generateMetadata({
 }: {
   searchParams: Promise<SearchParams>;
 }) {
-  const { category } = await searchParams;
-  const title = !category || category === "all"
+  const { category, search } = await searchParams;
+  
+  const title = search
+    ? `Results for "${search}" — NEPASET`
+    : !category || category === "all"
     ? "Shop — NEPASET"
     : `${category.charAt(0).toUpperCase() + category.slice(1)} — NEPASET`;
 
